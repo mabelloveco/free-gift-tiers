@@ -1,0 +1,21 @@
+api_version = "2025-04"
+
+[[extensions]]
+name = "Volume / Tiered Discounts"
+handle = "volume-tiers"
+uid = "eab578a2-9516-023d-ac4e-eb21b22f636775e9b0d8"
+type = "function"
+description = "Progressive discounts based on quantity or spend (e.g., 10% off 2+, 20% off 4+)"
+
+  [[extensions.targeting]]
+  target = "purchase.product-discount.run"
+  export = "run"
+
+  [extensions.ui.paths]
+  create = "/app/campaigns/volume/new"
+  details = "/app/campaigns/volume/:functionId/:id"
+
+  [extensions.build]
+  command = ""
+  path = "dist/function.wasm"
+

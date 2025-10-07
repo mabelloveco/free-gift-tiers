@@ -1,0 +1,99 @@
+{% comment %}
+  Gift Progress Bar Block
+  Shows progress toward free gift threshold
+{% endcomment %}
+
+{{ 'progress-bar.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign threshold_cents = block.settings.threshold | times: 100
+-%}
+
+<div 
+  id="fgp-progress" 
+  data-threshold-cents="{{ threshold_cents }}"
+  style="
+    --bar-color: {{ block.settings.bar_color | default: '#4caf50' }};
+    --bg-color: {{ block.settings.bg_color | default: '#eee' }};
+    --text-color: {{ block.settings.text_color | default: '#333' }};
+  "
+>
+  <div 
+    id="fgp-bar" 
+    style="height: 8px; background: var(--bg-color); border-radius: 4px; overflow: hidden;"
+  >
+    <div 
+      id="fgp-fill" 
+      style="height: 8px; width: 0; background: var(--bar-color); transition: width 0.3s ease;"
+    ></div>
+  </div>
+  <div 
+    id="fgp-text" 
+    style="margin-top: 8px; font-size: 14px; color: var(--text-color);"
+  ></div>
+</div>
+
+<script src="{{ 'progress-bar.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "Gift Progress Bar",
+  "target": "section",
+  "settings": [
+    {
+      "type": "number",
+      "id": "threshold",
+      "label": "Threshold amount (dollars)",
+      "default": 100
+    },
+    {
+      "type": "text",
+      "id": "message_before",
+      "label": "Message before goal",
+      "default": "Spend {amount} more for a free gift!",
+      "info": "Use {amount} as placeholder"
+    },
+    {
+      "type": "text",
+      "id": "message_after",
+      "label": "Message after goal",
+      "default": "🎁 You've unlocked a free gift!"
+    },
+    {
+      "type": "product",
+      "id": "gift_product",
+      "label": "Gift product (optional preview)"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_gift_preview",
+      "label": "Show gift preview when unlocked",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "bar_color",
+      "label": "Progress bar color",
+      "default": "#4caf50"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background color",
+      "default": "#e0e0e0"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#333333"
+    },
+    {
+      "type": "text",
+      "id": "style_class",
+      "label": "Custom CSS class (optional)"
+    }
+  ]
+}
+{% endschema %}
+

@@ -1,0 +1,21 @@
+api_version = "2025-04"
+
+[[extensions]]
+name = "Buy X Get Y (BXGY)"
+handle = "bxgy"
+uid = "ca4b4648-259d-ff37-72d6-bf0f999fea2061f60355"
+type = "function"
+description = "Buy X products, get Y products at a discount or free"
+
+  [[extensions.targeting]]
+  target = "purchase.product-discount.run"
+  export = "run"
+
+  [extensions.ui.paths]
+  create = "/app/campaigns/bxgy/new"
+  details = "/app/campaigns/bxgy/:functionId/:id"
+
+  [extensions.build]
+  command = ""
+  path = "dist/function.wasm"
+

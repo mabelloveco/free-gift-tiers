@@ -1,0 +1,21 @@
+api_version = "2025-04"
+
+[[extensions]]
+name = "Free Gift Tiers"
+handle = "gift-tiers-product-discount"
+uid = "12b38aba-6a0a-2401-b666-34858fdc9f4a4d4882de"
+type = "function"
+description = "Automatically makes a gift product free when cart reaches a threshold"
+
+  [[extensions.targeting]]
+  target = "purchase.product-discount.run"
+  input_query = "input.graphql"
+  export = "run"
+
+  [extensions.ui.paths]
+  create = "/app/gift-tiers/new"
+  details = "/app/gift-tiers/:functionId/:id"
+
+  [extensions.build]
+  command = ""
+  path = "dist/function.wasm"

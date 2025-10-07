@@ -1,0 +1,17 @@
+api_version = "2025-04"
+
+[[extensions]]
+name = "Auto Add Free Gifts"
+handle = "gift-auto-add"
+uid = "a861d8e8-c0e7-53a1-f148-cdd143be5f11ee657b7a"
+type = "function"
+description = "Automatically adds free gift to cart when threshold is met"
+
+  [[extensions.targeting]]
+  target = "purchase.cart-transform.run"
+  export = "run"
+
+  [extensions.build]
+  command = ""
+  path = "dist/function.wasm"
+

@@ -1,0 +1,8 @@
+
+uid = "aac5ac55-329f-143d-7d58-cbcbd035b5a17fdd154c"
+type = "theme"
+name = "Gift Progress & Motivators"
+
+[development]
+root = "."
+

@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Note that some adapters may set a maximum length for the String type by default, please ensure your strings are long
+// enough when changing adapters.
+// See https://www.prisma.io/docs/orm/reference/prisma-schema-reference#string for more information
+datasource db {
+  provider = "sqlite"
+  url      = "file:dev.sqlite"
+}
+
+model Session {
+  id            String    @id
+  shop          String
+  state         String
+  isOnline      Boolean   @default(false)
+  scope         String?
+  expires       DateTime?
+  accessToken   String
+  userId        BigInt?
+  firstName     String?
+  lastName      String?
+  email         String?
+  accountOwner  Boolean   @default(false)
+  locale        String?
+  collaborator  Boolean?  @default(false)
+  emailVerified Boolean?  @default(false)
+}
+
+model Campaign {
+  id              String   @id @default(cuid())
+  shop            String
+  type            String   // "free_gift", "bxgy", "volume"
+  title           String
+  status          String   @default("active") // "active", "paused", "archived"
+  config          String   // JSON configuration
+  functionId      String?
+  discountId      String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  events          CampaignEvent[]
+  
+  @@index([shop, status])
+}
+
+model CampaignEvent {
+  id            String    @id @default(cuid())
+  campaignId    String
+  shop          String
+  eventType     String    // "gift_added", "threshold_reached", "bxgy_applied", "volume_discount_applied"
+  orderId       String?
+  cartId        String?
+  customerId    String?
+  discountAmount Decimal?
+  metadata      String?   // JSON for additional data
+  createdAt     DateTime  @default(now())
+  
+  campaign      Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  
+  @@index([campaignId, createdAt])
+  @@index([shop, eventType])
+}
+
+model BillingPlan {
+  id            String    @id @default(cuid())
+  shop          String    @unique
+  plan          String    @default("free") // "free", "grow", "advanced", "plus"
+  status        String    @default("active") // "active", "cancelled", "trial"
+  billingId     String?   // Shopify billing ID
+  trialEndsAt   DateTime?
+  billedAt      DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@index([shop, status])
+}
