@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreeGiftTiers - Shopify App Store Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f6f6f7;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .app-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-align: left;
+        }
+
+        .app-tagline {
+            font-size: 1.2rem;
+            color: #e0e0e0;
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+
+        .app-meta {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .meta-label {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+
+        .meta-value {
+            color: white;
+            font-weight: 500;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .left-column {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .right-column {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1a1a1a;
+        }
+
+        .description {
+            font-size: 1rem;
+            margin-bottom: 2rem;
+            color: #4a4a4a;
+        }
+
+        .features-list {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            padding: 0.5rem 0;
+        }
+
+        .feature-icon {
+            font-size: 1.2rem;
+            margin-top: 0.1rem;
+        }
+
+        .feature-content {
+            flex: 1;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 0.25rem;
+        }
+
+        .feature-desc {
+            color: #4a4a4a;
+            font-size: 0.9rem;
+        }
+
+        .pricing-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .pricing-table th,
+        .pricing-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .pricing-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .pricing-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .plan-name {
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .plan-price {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #0070f3;
+        }
+
+        .plan-features {
+            color: #4a4a4a;
+            font-size: 0.9rem;
+        }
+
+        .cta-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .cta-button {
+            background: #0070f3;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.2s;
+        }
+
+        .cta-button:hover {
+            background: #0051a2;
+        }
+
+        .screenshots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .screenshot {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            border: 2px dashed #e0e0e0;
+        }
+
+        .screenshot img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+
+        .screenshot-caption {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #4a4a4a;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .app-title {
+                font-size: 2rem;
+            }
+            
+            .app-meta {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-header">
+        <div class="container">
+            <h1 class="app-title">FreeGiftTiers</h1>
+            <p class="app-tagline">Boost sales with automatic free gifts, BOGO, and tiered discounts.</p>
+            
+            <div class="app-meta">
+                <div class="meta-item">
+                    <span class="meta-label">Developer:</span>
+                    <span class="meta-value">Mabel Love Co.</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Category:</span>
+                    <span class="meta-value">Discounts</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Support:</span>
+                    <span class="meta-value">orders@mabelloveco.com</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Works with:</span>
+                    <span class="meta-value">Checkout, Slide Carts, UpCart</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="main-content">
+            <div class="left-column">
+                <h2 class="section-title">About this app</h2>
+                <p class="description">
+                    Transform your store's conversion rates with FreeGiftTiers, the comprehensive discount campaign app that automates free gift rewards and tiered promotions. Create engaging customer experiences that drive higher average order values and build lasting loyalty.
+                </p>
+
+                <h3 class="section-title">Key Features</h3>
+                <ul class="features-list">
+                    <li class="feature-item">
+                        <span class="feature-icon">🎁</span>
+                        <div class="feature-content">
+                            <div class="feature-title">Automatic Free Gifts</div>
+                            <div class="feature-desc">Set spending thresholds to unlock free gifts and boost average order value</div>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <span class="feature-icon">🛒</span>
+                        <div class="feature-content">
+                            <div class="feature-title">BOGO Campaigns</div>
+                            <div class="feature-desc">Create "Buy X Get Y" promotions that move inventory and increase sales volume</div>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <span class="feature-icon">📈</span>
+                        <div class="feature-content">
+                            <div class="feature-title">Tiered Discounts</div>
+                            <div class="feature-desc">Implement volume pricing with progressive discount tiers for bulk purchases</div>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <span class="feature-icon">📊</span>
+                        <div class="feature-content">
+                            <div class="feature-title">Progress Bar Widgets</div>
+                            <div class="feature-desc">Show customers how close they are to rewards with motivational progress bars</div>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <span class="feature-icon">⚡</span>
+                        <div class="feature-content">
+                            <div class="feature-title">Shopify Functions</div>
+                            <div class="feature-desc">Built on native Shopify technology for maximum compatibility and performance</div>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <span class="feature-icon">📱</span>
+                        <div class="feature-content">
+                            <div class="feature-title">Mobile Optimized</div>
+                            <div class="feature-desc">Perfect experience across all devices with responsive design</div>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <span class="feature-icon">📈</span>
+                        <div class="feature-content">
+                            <div class="feature-title">Real-time Analytics</div>
+                            <div class="feature-desc">Track campaign performance and optimize your discount strategy</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="right-column">
+                <h3 class="section-title">Pricing</h3>
+                <table class="pricing-table">
+                    <thead>
+                        <tr>
+                            <th>Plan</th>
+                            <th>Price</th>
+                            <th>Features</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="plan-name">Free</td>
+                            <td class="plan-price">$0/mo</td>
+                            <td class="plan-features">1 active campaign, basic free gift functionality</td>
+                        </tr>
+                        <tr>
+                            <td class="plan-name">Basic</td>
+                            <td class="plan-price">$19/mo</td>
+                            <td class="plan-features">5 campaigns, all types, progress widgets</td>
+                        </tr>
+                        <tr>
+                            <td class="plan-name">Pro</td>
+                            <td class="plan-price">$39/mo</td>
+                            <td class="plan-features">15 campaigns, advanced analytics, A/B testing</td>
+                        </tr>
+                        <tr>
+                            <td class="plan-name">Plus</td>
+                            <td class="plan-price">$49/mo</td>
+                            <td class="plan-features">Unlimited campaigns, API access, white-label</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div style="margin-top: 2rem;">
+                    <h4 style="margin-bottom: 1rem; color: #1a1a1a;">App Information</h4>
+                    <div style="font-size: 0.9rem; color: #4a4a4a; line-height: 1.8;">
+                        <div><strong>Category:</strong> Discounts > Promotions - Other</div>
+                        <div><strong>Languages:</strong> English</div>
+                        <div><strong>Compatibility:</strong> All Shopify plans</div>
+                        <div><strong>Support:</strong> orders@mabelloveco.com</div>
+                        <div><strong>Response Time:</strong> 24-48 hours</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cta-section">
+            <h2 style="margin-bottom: 1rem; color: #1a1a1a;">Ready to boost your sales?</h2>
+            <p style="margin-bottom: 2rem; color: #4a4a4a;">Install FreeGiftTiers and start creating compelling discount campaigns that drive higher average order values.</p>
+            <a href="#" class="cta-button">Install App</a>
+        </div>
+
+        <div class="screenshots-grid">
+            <div class="screenshot">
+                <div style="height: 200px; background: #f0f0f0; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #666; margin-bottom: 0.5rem;">
+                    📊 Dashboard Screenshot
+                </div>
+                <div class="screenshot-caption">Manage all your discount campaigns from one clean dashboard</div>
+            </div>
+            <div class="screenshot">
+                <div style="height: 200px; background: #f0f0f0; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #666; margin-bottom: 0.5rem;">
+                    ⚙️ Campaign Setup
+                </div>
+                <div class="screenshot-caption">Create campaigns in minutes with our intuitive interface</div>
+            </div>
+            <div class="screenshot">
+                <div style="height: 200px; background: #f0f0f0; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #666; margin-bottom: 0.5rem;">
+                    📈 Progress Bar
+                </div>
+                <div class="screenshot-caption">Motivate customers with real-time progress bars</div>
+            </div>
+            <div class="screenshot">
+                <div style="height: 200px; background: #f0f0f0; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #666; margin-bottom: 0.5rem;">
+                    🛒 Checkout Integration
+                </div>
+                <div class="screenshot-caption">Seamless integration with Shopify Checkout</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

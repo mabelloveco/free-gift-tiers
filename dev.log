@@ -370,3 +370,10 @@ Extension changedExtension changedExtension changedExtension changedExtension ch
 Error while polling app logs.Retrying in 5 seconds.[shopify-app/INFO] Authenticating admin request | {shop: mabeltheme-2.myshopify.com}
 [shopify-app/INFO] Authenticating admin request | {shop: null}
 [shopify-app/INFO] Authenticating admin request | {shop: null}
+❌ Error└  Error reloading app: Unsupported section(s) in app configuration: app_store❌ Error└  Error reloading app: Unsupported section(s) in app configuration: app_store❌ Error└  Error reloading app: Unsupported section(s) in app configuration: app_store❌ Error└  Error reloading app: Unsupported section(s) in app configuration: app_store10:31:35 PM [vite] (client) page reload SHOPIFY_APP_STORE_PREVIEW.html
+10:31:38 PM [vite] (client) page reload SHOPIFY_APP_STORE_PREVIEW.html
+10:31:44 PM [vite] (client) page reload SHOPIFY_APP_STORE_PREVIEW.html
+Error while polling app logs.Retrying in 5 seconds.10:53:51 PM [vite] (client) page reload marketing/preview/index.html
+Error while polling app logs.Retrying in 5 seconds.Error while polling app logs.Retrying in 5 seconds.11:03:34 PM [vite] (client) page reload marketing/preview/index.html
+11:05:34 PM [vite] (client) page reload marketing/preview/index.html
+11:29:23 PM [vite] (client) page reload marketing/preview/index.html
