@@ -353,3 +353,20 @@ Extension changedExtension changedExtension changedExtension changedExtension ch
 8:51:54 PM [vite] (ssr) page reload app/routes/app.billing.tsx
 8:52:14 PM [vite] (client) hmr update /app/routes/app.campaigns._index.tsx
 8:52:14 PM [vite] (ssr) page reload app/models/giftTiers.server.ts
+8:52:35 PM [vite] (client) hmr update /app/routes/app.campaigns._index.tsx
+8:52:35 PM [vite] (ssr) page reload app/models/giftTiers.server.ts
+8:52:35 PM [vite] (ssr) page reload app/routes/app.gift-tiers._index.tsx
+8:52:35 PM [vite] (ssr) page reload app/routes/app.gift-tiers.new.tsx
+8:52:35 PM [vite] (ssr) page reload app/routes/app.billing.tsx
+8:52:35 PM [vite] (client) hmr update /app/routes/app._index.tsx
+8:52:35 PM [vite] (client) hmr update /app/routes/app._index.tsx
+8:52:35 PM [vite] (client) hmr update /app/routes/app._index.tsx
+8:52:35 PM [vite] (ssr) page reload app/routes/app._index.tsx
+8:52:35 PM [vite] (ssr) page reload app/routes/app.gift-tiers._index.tsx
+8:52:35 PM [vite] (client) hmr update /app/routes/app._index.tsx
+8:52:35 PM [vite] (client) hmr update /app/routes/app._index.tsx
+8:52:35 PM [vite] (client) hmr update /app/routes/app._index.tsx
+8:52:35 PM [vite] (ssr) page reload app/routes/app._index.tsx
+Error while polling app logs.Retrying in 5 seconds.[shopify-app/INFO] Authenticating admin request | {shop: mabeltheme-2.myshopify.com}
+[shopify-app/INFO] Authenticating admin request | {shop: null}
+[shopify-app/INFO] Authenticating admin request | {shop: null}
