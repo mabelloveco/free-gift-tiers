@@ -50,7 +50,7 @@ export function run(input) {
 
     // Find the highest tier this line qualifies for
     const applicableTier = sortedTiers.find(
-      (tier) => line.quantity >= tier.quantity
+      (tier) => line.quantity >= tier.quantity,
     );
 
     if (applicableTier) {
@@ -68,4 +68,3 @@ export function run(input) {
 
   return { discounts };
 }
-

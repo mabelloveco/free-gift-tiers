@@ -1,4 +1,3 @@
-import { useState } from "react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { useLoaderData, useSubmit, useActionData } from "@remix-run/react";
@@ -14,7 +13,6 @@ import {
   Badge,
   InlineStack,
   Banner,
-  Box,
   Divider,
 } from "@shopify/polaris";
 import { TitleBar } from "@shopify/app-bridge-react";
@@ -141,10 +139,7 @@ export default function Billing() {
   const { billingPlan, plans } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const submit = useSubmit();
-  const [selectedPlan, setSelectedPlan] = useState(billingPlan.plan);
-
   const handleSelectPlan = (plan: string) => {
-    setSelectedPlan(plan);
     const formData = new FormData();
     formData.append("plan", plan);
     submit(formData, { method: "post" });
@@ -170,13 +165,16 @@ export default function Billing() {
                       Current Plan
                     </Text>
                     <InlineStack gap="200">
-                      <Badge tone="success">{billingPlan.plan.toUpperCase()}</Badge>
+                      <Badge tone="success">
+                        {billingPlan.plan.toUpperCase()}
+                      </Badge>
                       <Badge>{billingPlan.status}</Badge>
                     </InlineStack>
                   </BlockStack>
                   {billingPlan.plan !== "free" && (
                     <Text as="p" variant="headingLg">
-                      ${plans[billingPlan.plan as keyof typeof plans].price}/month
+                      ${plans[billingPlan.plan as keyof typeof plans].price}
+                      /month
                     </Text>
                   )}
                 </InlineStack>
@@ -214,12 +212,16 @@ export default function Billing() {
                     </BlockStack>
 
                     <Button
-                      variant={billingPlan.plan === key ? "primary" : "secondary"}
+                      variant={
+                        billingPlan.plan === key ? "primary" : "secondary"
+                      }
                       fullWidth
                       disabled={billingPlan.plan === key}
                       onClick={() => handleSelectPlan(key)}
                     >
-                      {billingPlan.plan === key ? "Current Plan" : "Select Plan"}
+                      {billingPlan.plan === key
+                        ? "Current Plan"
+                        : "Select Plan"}
                     </Button>
                   </BlockStack>
                 </Card>
@@ -231,4 +233,3 @@ export default function Billing() {
     </Page>
   );
 }
-

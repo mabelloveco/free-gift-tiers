@@ -1,7 +1,12 @@
 import { useState, useCallback } from "react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { useActionData, useLoaderData, useNavigate, useSubmit } from "@remix-run/react";
+import {
+  useActionData,
+  useLoaderData,
+  useNavigate,
+  useSubmit,
+} from "@remix-run/react";
 import {
   Page,
   Layout,
@@ -11,9 +16,8 @@ import {
   Button,
   Banner,
   Text,
-  InlineStack,
 } from "@shopify/polaris";
-import { TitleBar, useAppBridge } from "@shopify/app-bridge-react";
+import { useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../shopify.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -36,15 +40,16 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   const data = await response.json();
   const functions = data.data?.shopifyFunctions?.nodes || [];
-  
+
   // Find our gift-tiers function
-  const giftTiersFunction = functions.find((fn: any) => 
-    fn.apiType === "product_discounts" || fn.appKey?.includes("gift-tiers")
+  const giftTiersFunction = functions.find(
+    (fn: any) =>
+      fn.apiType === "product_discounts" || fn.appKey?.includes("gift-tiers"),
   );
 
-  return json({ 
+  return json({
     functionId: giftTiersFunction?.id,
-    functions 
+    functions,
   });
 };
 
@@ -60,21 +65,22 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   // Validate inputs
   if (!title || !thresholdDollars || !giftVariantId || !functionId) {
     return json(
-      { error: "All fields are required. Please refresh the page if function ID is missing." },
-      { status: 400 }
+      {
+        error:
+          "All fields are required. Please refresh the page if function ID is missing.",
+      },
+      { status: 400 },
     );
   }
 
   const thresholdCents = Math.round(parseFloat(thresholdDollars) * 100);
 
   if (isNaN(thresholdCents) || thresholdCents <= 0) {
-    return json(
-      { error: "Invalid threshold amount" },
-      { status: 400 }
-    );
+    return json({ error: "Invalid threshold amount" }, { status: 400 });
   }
 
-  const response = await admin.graphql(`
+  const response = await admin.graphql(
+    `
     #graphql
     mutation CreateAutomaticDiscount($discount: DiscountAutomaticAppInput!) {
       discountAutomaticAppCreate(automaticAppDiscount: $discount) {
@@ -89,31 +95,33 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         }
       }
     }
-  `, {
-    variables: {
-      discount: {
-        title,
-        functionId,
-        combinesWith: {
-          orderDiscounts: false,
-          productDiscounts: false,
-          shippingDiscounts: false,
-        },
-        startsAt: new Date().toISOString(),
-        metafields: [
-          {
-            namespace: "$app:gift-tiers",
-            key: "config",
-            type: "json",
-            value: JSON.stringify({
-              thresholdCents,
-              giftVariantId,
-            }),
+  `,
+    {
+      variables: {
+        discount: {
+          title,
+          functionId,
+          combinesWith: {
+            orderDiscounts: false,
+            productDiscounts: false,
+            shippingDiscounts: false,
           },
-        ],
+          startsAt: new Date().toISOString(),
+          metafields: [
+            {
+              namespace: "$app:gift-tiers",
+              key: "config",
+              type: "json",
+              value: JSON.stringify({
+                thresholdCents,
+                giftVariantId,
+              }),
+            },
+          ],
+        },
       },
     },
-  });
+  );
 
   const data = await response.json();
 
@@ -124,7 +132,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           data.data.discountAutomaticAppCreate.userErrors[0]?.message ||
           "Failed to create discount",
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -168,7 +176,10 @@ export default function NewGiftTier() {
 
   return (
     <Page
-      backAction={{ content: "Discounts", onAction: () => navigate("/app/gift-tiers") }}
+      backAction={{
+        content: "Discounts",
+        onAction: () => navigate("/app/gift-tiers"),
+      }}
       title="Create free gift discount"
       primaryAction={{
         content: "Save",
@@ -182,7 +193,10 @@ export default function NewGiftTier() {
           <BlockStack gap="500">
             {!functionId && (
               <Banner tone="warning">
-                <p>Function not found. Make sure the discount function is deployed. Try running: npm run deploy</p>
+                <p>
+                  Function not found. Make sure the discount function is
+                  deployed. Try running: npm run deploy
+                </p>
               </Banner>
             )}
 
@@ -233,7 +247,9 @@ export default function NewGiftTier() {
                 </Text>
                 <BlockStack gap="200">
                   <Button onClick={handleVariantPicker}>
-                    {giftVariantId ? "Change product variant" : "Select product variant"}
+                    {giftVariantId
+                      ? "Change product variant"
+                      : "Select product variant"}
                   </Button>
                   {giftVariantId && (
                     <Text as="p" variant="bodySm" tone="subdued">
@@ -241,7 +257,8 @@ export default function NewGiftTier() {
                     </Text>
                   )}
                   <Text as="p" variant="bodySm" tone="subdued">
-                    This product variant will become $0 when the threshold is met
+                    This product variant will become $0 when the threshold is
+                    met
                   </Text>
                 </BlockStack>
               </BlockStack>
@@ -252,4 +269,3 @@ export default function NewGiftTier() {
     </Page>
   );
 }
-

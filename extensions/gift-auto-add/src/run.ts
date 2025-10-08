@@ -7,17 +7,26 @@
 
 export function run(input) {
   // Read from configuration (passed directly to function)
-  const cfg = (input as any).configuration || { thresholdCents: 0, giftVariantId: "" };
+  const cfg = (input as any).configuration || {
+    thresholdCents: 0,
+    giftVariantId: "",
+  };
   const giftId = cfg.giftVariantId;
   const thr = cfg.thresholdCents;
 
-  const subtotalCents = Math.round(
-    Number(input.cart.cost.subtotalAmount.amount) *
-      Math.pow(10, input.cart.cost.subtotalAmount.currencyCode === "JPY" ? 0 : 2)
-  ) || 0;
+  const subtotalCents =
+    Math.round(
+      Number(input.cart.cost.subtotalAmount.amount) *
+        Math.pow(
+          10,
+          input.cart.cost.subtotalAmount.currencyCode === "JPY" ? 0 : 2,
+        ),
+    ) || 0;
 
   const hasGiftLine = input.cart.lines.find(
-    (line) => line.merchandise?.__typename === "ProductVariant" && line.merchandise?.id === giftId
+    (line) =>
+      line.merchandise?.__typename === "ProductVariant" &&
+      line.merchandise?.id === giftId,
   );
 
   const operations = [];
@@ -53,4 +62,3 @@ export function run(input) {
 
   return { operations };
 }
-

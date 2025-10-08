@@ -1,7 +1,12 @@
 import { useState, useCallback, useEffect } from "react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { useActionData, useLoaderData, useNavigate, useSubmit } from "@remix-run/react";
+import {
+  useActionData,
+  useLoaderData,
+  useNavigate,
+  useSubmit,
+} from "@remix-run/react";
 import {
   Page,
   Layout,
@@ -21,7 +26,8 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const { admin } = await authenticate.admin(request);
   const { id } = params;
 
-  const response = await admin.graphql(`
+  const response = await admin.graphql(
+    `
     #graphql
     query GetDiscount($id: ID!) {
       discountNode(id: $id) {
@@ -38,9 +44,11 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
         }
       }
     }
-  `, {
-    variables: { id: `gid://shopify/DiscountNode/${id}` },
-  });
+  `,
+    {
+      variables: { id: `gid://shopify/DiscountNode/${id}` },
+    },
+  );
 
   const data = await response.json();
   const discountNode = data.data?.discountNode;
@@ -60,7 +68,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   const actionType = formData.get("_action");
 
   if (actionType === "delete") {
-    await admin.graphql(`
+    await admin.graphql(
+      `
       #graphql
       mutation DeleteDiscount($id: ID!) {
         discountAutomaticDelete(id: $id) {
@@ -71,9 +80,11 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
           }
         }
       }
-    `, {
-      variables: { id: `gid://shopify/DiscountAutomaticApp/${id}` },
-    });
+    `,
+      {
+        variables: { id: `gid://shopify/DiscountAutomaticApp/${id}` },
+      },
+    );
 
     return redirect("/app/gift-tiers");
   }
@@ -83,23 +94,18 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   const giftVariantId = String(formData.get("giftVariantId"));
 
   if (!title || !thresholdDollars || !giftVariantId) {
-    return json(
-      { error: "All fields are required" },
-      { status: 400 }
-    );
+    return json({ error: "All fields are required" }, { status: 400 });
   }
 
   const thresholdCents = Math.round(parseFloat(thresholdDollars) * 100);
 
   if (isNaN(thresholdCents) || thresholdCents <= 0) {
-    return json(
-      { error: "Invalid threshold amount" },
-      { status: 400 }
-    );
+    return json({ error: "Invalid threshold amount" }, { status: 400 });
   }
 
   // Update the discount
-  const response = await admin.graphql(`
+  const response = await admin.graphql(
+    `
     #graphql
     mutation UpdateAutomaticDiscount($id: ID!, $discount: DiscountAutomaticAppInput!) {
       discountAutomaticAppUpdate(id: $id, automaticAppDiscount: $discount) {
@@ -114,25 +120,27 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         }
       }
     }
-  `, {
-    variables: {
-      id: `gid://shopify/DiscountAutomaticApp/${id}`,
-      discount: {
-        title,
-        metafields: [
-          {
-            namespace: "$app:gift-tiers",
-            key: "config",
-            type: "json",
-            value: JSON.stringify({
-              thresholdCents,
-              giftVariantId,
-            }),
-          },
-        ],
+  `,
+    {
+      variables: {
+        id: `gid://shopify/DiscountAutomaticApp/${id}`,
+        discount: {
+          title,
+          metafields: [
+            {
+              namespace: "$app:gift-tiers",
+              key: "config",
+              type: "json",
+              value: JSON.stringify({
+                thresholdCents,
+                giftVariantId,
+              }),
+            },
+          ],
+        },
       },
     },
-  });
+  );
 
   const data = await response.json();
 
@@ -143,7 +151,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
           data.data.discountAutomaticAppUpdate.userErrors[0]?.message ||
           "Failed to update discount",
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -163,9 +171,11 @@ export default function EditGiftTier() {
 
   const [title, setTitle] = useState(discountNode.discount.title || "");
   const [thresholdDollars, setThresholdDollars] = useState(
-    (config.thresholdCents / 100).toFixed(2)
+    (config.thresholdCents / 100).toFixed(2),
   );
-  const [giftVariantId, setGiftVariantId] = useState(config.giftVariantId || "");
+  const [giftVariantId, setGiftVariantId] = useState(
+    config.giftVariantId || "",
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -209,7 +219,10 @@ export default function EditGiftTier() {
 
   return (
     <Page
-      backAction={{ content: "Discounts", onAction: () => navigate("/app/gift-tiers") }}
+      backAction={{
+        content: "Discounts",
+        onAction: () => navigate("/app/gift-tiers"),
+      }}
       title={title}
       primaryAction={{
         content: "Save",
@@ -247,7 +260,13 @@ export default function EditGiftTier() {
                   <Text as="h2" variant="headingMd">
                     Discount details
                   </Text>
-                  <Badge tone={discountNode.discount.status === "ACTIVE" ? "success" : undefined}>
+                  <Badge
+                    tone={
+                      discountNode.discount.status === "ACTIVE"
+                        ? "success"
+                        : undefined
+                    }
+                  >
                     {discountNode.discount.status}
                   </Badge>
                 </InlineStack>
@@ -295,7 +314,8 @@ export default function EditGiftTier() {
                     </Text>
                   )}
                   <Text as="p" variant="bodySm" tone="subdued">
-                    This product variant will become $0 when the threshold is met
+                    This product variant will become $0 when the threshold is
+                    met
                   </Text>
                 </BlockStack>
               </BlockStack>
@@ -306,4 +326,3 @@ export default function EditGiftTier() {
     </Page>
   );
 }
-

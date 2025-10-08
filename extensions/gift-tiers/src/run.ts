@@ -7,7 +7,7 @@
 export function run(input) {
   // Parse configuration from metafield
   let cfg = {};
-  
+
   try {
     const metafieldValue = input.discountNode?.metafield?.value;
     if (metafieldValue) {
@@ -18,11 +18,13 @@ export function run(input) {
   }
 
   const thresholdCents =
-    typeof cfg?.thresholdCents === "number" ? cfg.thresholdCents : Number.MAX_SAFE_INTEGER;
+    typeof cfg?.thresholdCents === "number"
+      ? cfg.thresholdCents
+      : Number.MAX_SAFE_INTEGER;
   const giftVariantId = cfg?.giftVariantId ?? "";
 
   const subtotalCents = Math.round(
-    Number(input.cart.cost.subtotalAmount.amount) * 100
+    Number(input.cart.cost.subtotalAmount.amount) * 100,
   );
 
   const qualifies = subtotalCents >= thresholdCents;
@@ -39,17 +41,17 @@ export function run(input) {
           targets: [{ productVariant: { id: giftVariantId } }],
           value: {
             percentage: {
-              value: 100
-            }
-          }
-        }
+              value: 100,
+            },
+          },
+        },
       ],
-      discountApplicationStrategy: "FIRST"
+      discountApplicationStrategy: "FIRST",
     };
   }
 
   return {
     discounts: [],
-    discountApplicationStrategy: "FIRST"
+    discountApplicationStrategy: "FIRST",
   };
 }

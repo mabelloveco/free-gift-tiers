@@ -1,10 +1,12 @@
 import type { AdminApiContext } from "@shopify/shopify-app-remix/server";
-import { GiftTiersConfig } from "../types/gift-tiers";
+import type { GiftTiersConfig } from "../types/gift-tiers";
 
 const METAFIELD_NAMESPACE = "gift_tiers";
 const METAFIELD_KEY = "config";
 
-export async function getConfig(admin: AdminApiContext): Promise<GiftTiersConfig | null> {
+export async function getConfig(
+  admin: AdminApiContext,
+): Promise<GiftTiersConfig | null> {
   try {
     const response = await admin.graphql(`
       query getGiftTiersConfig {
@@ -32,9 +34,24 @@ export async function getConfig(admin: AdminApiContext): Promise<GiftTiersConfig
   }
 }
 
-export async function saveConfig(admin: AdminApiContext, config: GiftTiersConfig): Promise<void> {
+export async function saveConfig(
+  admin: AdminApiContext,
+  config: GiftTiersConfig,
+): Promise<void> {
   try {
-    const response = await admin.graphql(`
+    // Get shop ID from the admin context
+    const shopResponse = await admin.graphql(`
+      query getShopId {
+        shop {
+          id
+        }
+      }
+    `);
+    const shopData = await shopResponse.json();
+    const shopId = shopData.data?.shop?.id?.replace('gid://shopify/Shop/', '') || '';
+
+    const response = await admin.graphql(
+      `
       mutation upsertGiftTiersConfig($metafield: MetafieldInput!) {
         metafieldSet(metafield: $metafield) {
           metafield {
@@ -48,22 +65,26 @@ export async function saveConfig(admin: AdminApiContext, config: GiftTiersConfig
           }
         }
       }
-    `, {
-      variables: {
-        metafield: {
-          namespace: METAFIELD_NAMESPACE,
-          key: METAFIELD_KEY,
-          value: JSON.stringify(config),
-          type: "json",
-          ownerId: `gid://shopify/Shop/${admin.session.shopId}`,
+    `,
+      {
+        variables: {
+          metafield: {
+            namespace: METAFIELD_NAMESPACE,
+            key: METAFIELD_KEY,
+            value: JSON.stringify(config),
+            type: "json",
+            ownerId: `gid://shopify/Shop/${shopId}`,
+          },
         },
       },
-    });
+    );
 
     const data = await response.json();
-    
+
     if (data.data?.metafieldSet?.userErrors?.length > 0) {
-      throw new Error(`Metafield errors: ${data.data.metafieldSet.userErrors.map((e: any) => e.message).join(", ")}`);
+      throw new Error(
+        `Metafield errors: ${data.data.metafieldSet.userErrors.map((e: any) => e.message).join(", ")}`,
+      );
     }
   } catch (error) {
     console.error("Error saving gift tiers config:", error);
@@ -71,9 +92,13 @@ export async function saveConfig(admin: AdminApiContext, config: GiftTiersConfig
   }
 }
 
-export async function validateGiftVariant(admin: AdminApiContext, variantId: string): Promise<boolean> {
+export async function validateGiftVariant(
+  admin: AdminApiContext,
+  variantId: string,
+): Promise<boolean> {
   try {
-    const response = await admin.graphql(`
+    const response = await admin.graphql(
+      `
       query validateGiftVariant($id: ID!) {
         productVariant(id: $id) {
           id
@@ -84,9 +109,11 @@ export async function validateGiftVariant(admin: AdminApiContext, variantId: str
           }
         }
       }
-    `, {
-      variables: { id: variantId },
-    });
+    `,
+      {
+        variables: { id: variantId },
+      },
+    );
 
     const data = await response.json();
     return !!data.data?.productVariant;

@@ -4,14 +4,13 @@ import {
   ProductDiscountSelectionStrategy,
   CartInput,
   CartLinesDiscountsGenerateRunResult,
-} from '../generated/api';
-
+} from "../generated/api";
 
 export function cartLinesDiscountsGenerateRun(
   input: CartInput,
 ): CartLinesDiscountsGenerateRunResult {
   if (!input.cart.lines.length) {
-    throw new Error('No cart lines found');
+    throw new Error("No cart lines found");
   }
 
   const hasOrderDiscountClass = input.discount.discountClasses.includes(
@@ -22,7 +21,7 @@ export function cartLinesDiscountsGenerateRun(
   );
 
   if (!hasOrderDiscountClass && !hasProductDiscountClass) {
-    return {operations: []};
+    return { operations: [] };
   }
 
   const maxCartLine = input.cart.lines.reduce((maxLine, line) => {
@@ -39,7 +38,7 @@ export function cartLinesDiscountsGenerateRun(
       orderDiscountsAdd: {
         candidates: [
           {
-            message: '10% OFF ORDER',
+            message: "10% OFF ORDER",
             targets: [
               {
                 orderSubtotal: {
@@ -64,7 +63,7 @@ export function cartLinesDiscountsGenerateRun(
       productDiscountsAdd: {
         candidates: [
           {
-            message: '20% OFF PRODUCT',
+            message: "20% OFF PRODUCT",
             targets: [
               {
                 cartLine: {

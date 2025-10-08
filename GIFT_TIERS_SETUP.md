@@ -1,9 +1,11 @@
 # Free Gift Tiers - Setup & Deployment Guide
 
 ## 🎯 Overview
+
 This app automatically makes a gift product free when the cart reaches a specified threshold.
 
 ## 📋 Prerequisites
+
 - Shopify CLI 3.85+
 - Development store: mabeltheme-2.myshopify.com
 - Node.js installed
@@ -11,32 +13,39 @@ This app automatically makes a gift product free when the cart reaches a specifi
 ## 🚀 Deployment Steps
 
 ### 1. Install Dependencies
+
 ```bash
 cd ~/free-gift-tiers
 npm install
 ```
 
 ### 2. Deploy the Extension
+
 ```bash
 npm run deploy
 ```
 
 This will:
+
 - Compile the discount function to WebAssembly
 - Upload it to Shopify
 - Register the function with your app
 
 ### 3. Update App Scopes
+
 The app needs new permissions:
+
 ```bash
 npm run shopify app config push
 ```
 
 You'll be prompted to update the app installation with new scopes:
+
 - `write_discounts`
 - `read_discounts`
 
 ### 4. Start Dev Server
+
 ```bash
 npm run dev
 ```
@@ -73,12 +82,14 @@ This starts the Remix app with hot reload.
 ## 📂 Key Files Changed
 
 ### Extension Files
+
 - `extensions/gift-tiers/src/run.ts` - Main discount logic
 - `extensions/gift-tiers/input.graphql` - Function input query
 - `extensions/gift-tiers/shopify.extension.toml` - Extension config
 - `extensions/gift-tiers/src/index.ts` - Export entry point
 
 ### App Files
+
 - `app/routes/app.gift-tiers._index.tsx` - List all discounts
 - `app/routes/app.gift-tiers.new.tsx` - Create new discount
 - `app/routes/app.gift-tiers.$functionId.$id.tsx` - Edit discount
@@ -88,20 +99,24 @@ This starts the Remix app with hot reload.
 ## 🔧 Troubleshooting
 
 ### Function not applying discount
+
 - Check the discount is ACTIVE in Shopify admin
 - Verify the gift product variant ID is correct
 - Ensure cart subtotal meets the threshold
 - Check that the gift product is in the cart
 
 ### Build errors
+
 ```bash
 npm run shopify app function build
 ```
 
 ### Type errors in run.ts
+
 The function uses `@ts-nocheck` because it targets the new `purchase.product-discount.run` API. After deploying, Shopify CLI will regenerate the types automatically.
 
 To manually regenerate types:
+
 ```bash
 npm run shopify app function typegen
 ```
@@ -145,8 +160,8 @@ npm run shopify app function typegen
 ## 🆘 Support
 
 If you encounter issues:
+
 1. Check Shopify CLI version: `npm run shopify version`
 2. View function logs in Partner Dashboard
 3. Test in Shopify admin → Discounts
 4. Check discount status and configuration
-

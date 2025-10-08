@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData, useNavigate } from "@remix-run/react";
@@ -6,8 +5,6 @@ import {
   Page,
   Layout,
   Card,
-  Button,
-  BlockStack,
   IndexTable,
   Text,
   Badge,
@@ -62,42 +59,43 @@ export default function GiftTiersIndex() {
     plural: "discounts",
   };
 
-  const rowMarkup = discounts.map(
-    ({ node }: any, index: number) => {
-      const config = node.metafield?.value
-        ? JSON.parse(node.metafield.value)
-        : null;
-      const title = node.discount?.title || "Untitled";
-      const status = node.discount?.status || "ACTIVE";
-      const thresholdDollars = config?.thresholdCents
-        ? (config.thresholdCents / 100).toFixed(2)
-        : "Not set";
+  const rowMarkup = discounts.map(({ node }: any, index: number) => {
+    const config = node.metafield?.value
+      ? JSON.parse(node.metafield.value)
+      : null;
+    const title = node.discount?.title || "Untitled";
+    const status = node.discount?.status || "ACTIVE";
+    const thresholdDollars = config?.thresholdCents
+      ? (config.thresholdCents / 100).toFixed(2)
+      : "Not set";
 
-      return (
-        <IndexTable.Row id={node.id} key={node.id} position={index}>
-          <IndexTable.Cell>
-            <Text variant="bodyMd" fontWeight="bold" as="span">
-              {title}
-            </Text>
-          </IndexTable.Cell>
-          <IndexTable.Cell>
-            <Badge tone={status === "ACTIVE" ? "success" : undefined}>
-              {status}
-            </Badge>
-          </IndexTable.Cell>
-          <IndexTable.Cell>${thresholdDollars}</IndexTable.Cell>
-          <IndexTable.Cell>
-            {config?.giftVariantId ? "Configured" : "Not set"}
-          </IndexTable.Cell>
-        </IndexTable.Row>
-      );
-    }
-  );
+    return (
+      <IndexTable.Row id={node.id} key={node.id} position={index}>
+        <IndexTable.Cell>
+          <Text variant="bodyMd" fontWeight="bold" as="span">
+            {title}
+          </Text>
+        </IndexTable.Cell>
+        <IndexTable.Cell>
+          <Badge tone={status === "ACTIVE" ? "success" : undefined}>
+            {status}
+          </Badge>
+        </IndexTable.Cell>
+        <IndexTable.Cell>${thresholdDollars}</IndexTable.Cell>
+        <IndexTable.Cell>
+          {config?.giftVariantId ? "Configured" : "Not set"}
+        </IndexTable.Cell>
+      </IndexTable.Row>
+    );
+  });
 
   return (
     <Page>
       <TitleBar title="Free Gift Tiers">
-        <button variant="primary" onClick={() => navigate("/app/gift-tiers/new")}>
+        <button
+          variant="primary"
+          onClick={() => navigate("/app/gift-tiers/new")}
+        >
           Create discount
         </button>
       </TitleBar>
@@ -139,4 +137,3 @@ export default function GiftTiersIndex() {
     </Page>
   );
 }
-

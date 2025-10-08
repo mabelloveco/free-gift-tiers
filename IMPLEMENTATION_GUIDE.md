@@ -3,6 +3,7 @@
 ## 📋 Overview
 
 Your app has been transformed into a comprehensive promotion platform with:
+
 - ✅ **4 Shopify Functions** (Free Gift, Auto-Add Cart Transform, BXGY, Volume Discounts)
 - ✅ **Theme App Extension** (Progress Bar Widget)
 - ✅ **Full Remix UI** (Dashboard, Campaigns, Billing)
@@ -28,6 +29,7 @@ npm run deploy -- --force
 ```
 
 This deploys:
+
 - `gift-tiers-product-discount` - Free gift when threshold met
 - `gift-auto-add` - Cart transform for auto-adding gifts
 - `bxgy` - Buy X Get Y campaigns
@@ -43,6 +45,7 @@ npm run dev
 ### 4. Update App Installation
 
 When prompted, accept the new scopes:
+
 - `write_cart_transforms`
 - `read_metaobjects`, `write_metaobjects`
 - `read_themes`, `write_theme_app_extensions`
@@ -56,11 +59,13 @@ When prompted, accept the new scopes:
 **Location:** `extensions/gift-auto-add/`
 
 **How it works:**
+
 - Automatically adds free gift product to cart when threshold is met
 - Removes gift when cart total drops below threshold
 - Configurable via metafield: `$app:fgp` → `auto_gift_config`
 
 **Configuration format:**
+
 ```json
 {
   "enabled": true,
@@ -77,11 +82,13 @@ When prompted, accept the new scopes:
 **Location:** `extensions/bxgy/`
 
 **How it works:**
+
 - Customer buys X quantity of specific products
 - Gets Y quantity of other products discounted
 - Supports 100% off (free) or percentage/fixed discounts
 
 **Configuration format:**
+
 ```json
 {
   "buyProducts": ["gid://shopify/Product/123"],
@@ -102,10 +109,12 @@ When prompted, accept the new scopes:
 **Location:** `extensions/volume-tiers/`
 
 **How it works:**
+
 - Progressive discounts based on quantity purchased
 - Example: Buy 2+ get 10% off, Buy 4+ get 20% off
 
 **Configuration format:**
+
 ```json
 {
   "targetProducts": [],
@@ -123,18 +132,21 @@ When prompted, accept the new scopes:
 **Location:** `extensions/motivator-widgets/`
 
 **Features:**
+
 - Real-time progress visualization
 - Customizable colors and messages
 - Optional gift product preview
 - Automatic cart updates via JavaScript
 
 **Installation:**
+
 1. Deploy app
 2. Go to your dev theme → Customize
 3. Add "Gift Progress Bar" block to cart/header
 4. Configure threshold, colors, and messages
 
 **Customization:**
+
 - Threshold amount
 - Progress bar color
 - Background color
@@ -149,17 +161,20 @@ When prompted, accept the new scopes:
 ### **Dashboard** (`/app`)
 
 **Metrics shown:**
+
 - Active campaigns count
 - Total events (30 days)
 - Total discounts given
 - Current billing plan
 
 **Quick actions:**
+
 - Create Free Gift campaign
 - Create BXGY campaign
 - Create Volume campaign
 
 **Recent campaigns list:**
+
 - Shows last 5 campaigns
 - Status badges
 - Event counts
@@ -177,6 +192,7 @@ When prompted, accept the new scopes:
 ### **Billing** (`/app/billing`)
 
 **Plans:**
+
 1. **Free** - $0/month
    - 1 active campaign
    - Basic analytics
@@ -204,6 +220,7 @@ When prompted, accept the new scopes:
 ## 📊 Analytics Schema
 
 ### **Campaign** Model
+
 ```prisma
 - id: unique identifier
 - shop: store domain
@@ -216,6 +233,7 @@ When prompted, accept the new scopes:
 ```
 
 ### **CampaignEvent** Model
+
 ```prisma
 - eventType: "gift_added" | "threshold_reached" | "bxgy_applied" | "volume_discount_applied"
 - orderId: order reference
@@ -225,6 +243,7 @@ When prompted, accept the new scopes:
 ```
 
 ### **BillingPlan** Model
+
 ```prisma
 - plan: "free" | "grow" | "advanced" | "plus"
 - status: "active" | "cancelled" | "trial"
@@ -236,15 +255,18 @@ When prompted, accept the new scopes:
 ## 🔧 Configuration Management
 
 ### **Metafield Namespace**
+
 All configurations stored in: `$app:fgp`
 
 ### **Keys:**
+
 - `auto_gift_config` - Cart transform settings
 - `bxgy_config` - BXGY campaign settings
 - `volume_config` - Volume tier settings
 - `config` - Legacy free gift settings
 
 ### **Why Metafields?**
+
 - Persisted with discount
 - No database sync needed
 - Function reads directly
@@ -255,19 +277,23 @@ All configurations stored in: `$app:fgp`
 ## 🎨 Theme Integration Best Practices
 
 ### **Progress Bar Placement**
+
 Recommended locations:
+
 1. **Cart drawer** - Show progress as customers shop
 2. **Header** - Persistent motivation
 3. **Cart page** - Prominent display
 4. **Product pages** - Drive higher cart values
 
 ### **Styling**
+
 - Matches your brand colors via settings
 - Rounded corners (12px) for modern look
 - Smooth animations (250ms cubic-bezier)
 - Respects `prefers-reduced-motion`
 
 ### **Performance**
+
 - CSS-only animations
 - Lazy-loaded JavaScript
 - Debounced cart API calls
@@ -278,12 +304,14 @@ Recommended locations:
 ## 🧪 Testing Checklist
 
 ### **Free Gift Function**
+
 - [ ] Create discount via UI
 - [ ] Add products to cart
 - [ ] Verify gift becomes $0 at threshold
 - [ ] Test below threshold (gift returns to normal price)
 
 ### **Cart Transform**
+
 - [ ] Enable auto-add configuration
 - [ ] Cart below threshold (gift not in cart)
 - [ ] Add items to reach threshold
@@ -291,18 +319,21 @@ Recommended locations:
 - [ ] Remove items (gift auto-removed)
 
 ### **BXGY**
+
 - [ ] Create "Buy 2 Get 1" campaign
 - [ ] Add 2 buy products
 - [ ] Add 1 get product
 - [ ] Verify get product is free
 
 ### **Volume Tiers**
+
 - [ ] Create 2-tier discount (2+ = 10%, 4+ = 20%)
 - [ ] Add 1 item (no discount)
 - [ ] Add 2nd item (10% off)
 - [ ] Add 4th item (20% off)
 
 ### **Progress Bar**
+
 - [ ] Install in theme
 - [ ] Verify shows below threshold
 - [ ] Verify updates on cart change
@@ -313,6 +344,7 @@ Recommended locations:
 ## 🐛 Troubleshooting
 
 ### **Functions not applying**
+
 ```bash
 # Redeploy functions
 npm run deploy -- --force
@@ -322,12 +354,14 @@ npm run deploy -- --force
 ```
 
 ### **Progress bar not updating**
+
 ```javascript
 // Trigger manual update
-document.dispatchEvent(new Event('cart:updated'));
+document.dispatchEvent(new Event("cart:updated"));
 ```
 
 ### **Type errors**
+
 ```bash
 # Regenerate Prisma client
 npx prisma generate
@@ -337,6 +371,7 @@ npm run shopify app function typegen
 ```
 
 ### **Cart transform not working**
+
 - Cart transforms require `write_cart_transforms` scope
 - Check configuration metafield exists
 - Verify `enabled: true` in config
@@ -347,18 +382,21 @@ npm run shopify app function typegen
 ## 📈 Next Steps
 
 ### **Immediate:**
+
 1. ✅ Deploy all extensions
 2. ✅ Run Prisma migrations
 3. ✅ Install theme extension
 4. ✅ Create test campaigns
 
 ### **Short-term:**
+
 1. Add webhook handlers for order creation → track events
 2. Build campaign wizard UI for each type
 3. Add email notifications for merchants
 4. Implement plan enforcement (campaign limits)
 
 ### **Long-term:**
+
 1. A/B testing campaigns
 2. Schedule campaigns (start/end dates)
 3. Customer segmentation
@@ -380,6 +418,7 @@ npm run shopify app function typegen
 ## 🎉 You're All Set!
 
 Your app now has the same functionality as top-rated Shopify promotion apps like BOGOS and Kite. All code follows best practices:
+
 - Type-safe TypeScript
 - Accessible UI (WCAG AA)
 - Performance-optimized
@@ -387,4 +426,3 @@ Your app now has the same functionality as top-rated Shopify promotion apps like
 - Reduced motion support
 
 **Happy coding!** 🚀
-

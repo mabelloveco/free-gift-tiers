@@ -11,7 +11,7 @@
  */
 
 export function run(input) {
-  const cfg = (input as any).discountNode?.metafield?.value 
+  const cfg = (input as any).discountNode?.metafield?.value
     ? JSON.parse((input as any).discountNode.metafield.value)
     : {
         getVariantIds: [],
@@ -20,19 +20,27 @@ export function run(input) {
       };
 
   const lines = input.cart.lines || [];
-  const qtyTotal = lines.reduce((s: number, l: any) => s + (l.quantity || 0), 0);
+  const qtyTotal = lines.reduce(
+    (s: number, l: any) => s + (l.quantity || 0),
+    0,
+  );
 
   // Not eligible if cart doesn't meet minimum quantity
-  if (qtyTotal < (cfg.buyMinQty || 1) || !cfg.getVariantIds || cfg.getVariantIds.length === 0) {
+  if (
+    qtyTotal < (cfg.buyMinQty || 1) ||
+    !cfg.getVariantIds ||
+    cfg.getVariantIds.length === 0
+  ) {
     return { discounts: [] };
   }
 
   // Find target "get" items present in cart
   const targetLineIds: string[] = [];
   for (const line of lines) {
-    const vid = line.merchandise?.__typename === "ProductVariant" 
-      ? line.merchandise?.id 
-      : null;
+    const vid =
+      line.merchandise?.__typename === "ProductVariant"
+        ? line.merchandise?.id
+        : null;
     if (vid && cfg.getVariantIds.includes(vid)) {
       targetLineIds.push(line.id);
     }
@@ -66,4 +74,3 @@ export function run(input) {
     ],
   };
 }
-

@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
@@ -49,13 +48,16 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const totalEvents = events.length;
   const totalDiscountAmount = events.reduce(
     (sum, e) => sum + Number(e.discountAmount || 0),
-    0
+    0,
   );
 
-  const eventsByType = events.reduce((acc, event) => {
-    acc[event.eventType] = (acc[event.eventType] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const eventsByType = events.reduce(
+    (acc, event) => {
+      acc[event.eventType] = (acc[event.eventType] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
 
   // Get billing plan
   const billingPlan = await prisma.billingPlan.findUnique({
@@ -128,7 +130,9 @@ export default function Index() {
                     Current Plan
                   </Text>
                   <Text as="p" variant="headingLg">
-                    <Badge tone="success">{billingPlan.plan.toUpperCase()}</Badge>
+                    <Badge tone="success">
+                      {billingPlan.plan.toUpperCase()}
+                    </Badge>
                   </Text>
                   <Button url="/app/billing" variant="plain" size="slim">
                     Upgrade
@@ -153,16 +157,10 @@ export default function Index() {
                   >
                     Free Gift Tier
                   </Button>
-                  <Button
-                    url="/app/campaigns/bxgy/new"
-                    fullWidth
-                  >
+                  <Button url="/app/campaigns/bxgy/new" fullWidth>
                     Buy X Get Y
                   </Button>
-                  <Button
-                    url="/app/campaigns/volume/new"
-                    fullWidth
-                  >
+                  <Button url="/app/campaigns/volume/new" fullWidth>
                     Volume Discount
                   </Button>
                 </InlineGrid>
@@ -206,10 +204,20 @@ export default function Index() {
                         <InlineStack align="space-between" blockAlign="center">
                           <BlockStack gap="200">
                             <InlineStack gap="200">
-                              <Text as="h3" variant="headingSm" fontWeight="bold">
+                              <Text
+                                as="h3"
+                                variant="headingSm"
+                                fontWeight="bold"
+                              >
                                 {campaign.title}
                               </Text>
-                              <Badge tone={campaign.status === "active" ? "success" : "info"}>
+                              <Badge
+                                tone={
+                                  campaign.status === "active"
+                                    ? "success"
+                                    : "info"
+                                }
+                              >
                                 {campaign.status}
                               </Badge>
                               <Badge>{campaign.type.replace("_", " ")}</Badge>
@@ -242,16 +250,18 @@ export default function Index() {
                     Event Breakdown (30d)
                   </Text>
                   <BlockStack gap="300">
-                    {Object.entries(metrics.eventsByType).map(([type, count]) => (
-                      <InlineStack key={type} align="space-between">
-                        <Text as="p" variant="bodySm">
-                          {type.replace(/_/g, " ")}
-                        </Text>
-                        <Text as="p" variant="bodyMd" fontWeight="bold">
-                          {count}
-                        </Text>
-                      </InlineStack>
-                    ))}
+                    {Object.entries(metrics.eventsByType).map(
+                      ([type, count]) => (
+                        <InlineStack key={type} align="space-between">
+                          <Text as="p" variant="bodySm">
+                            {type.replace(/_/g, " ")}
+                          </Text>
+                          <Text as="p" variant="bodyMd" fontWeight="bold">
+                            {count}
+                          </Text>
+                        </InlineStack>
+                      ),
+                    )}
                   </BlockStack>
                 </BlockStack>
               </Card>

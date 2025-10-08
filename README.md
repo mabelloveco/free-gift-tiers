@@ -5,21 +5,25 @@ A comprehensive Shopify app that enables merchants to create automated discount 
 ## What This App Does
 
 ### 🎁 Free Gift Campaigns
+
 - Automatically add free gifts when customers reach a spending threshold
 - Configure gift products and minimum order values
 - Real-time progress tracking for customers
 
-### 🛒 Buy X Get Y (BXGY) Campaigns  
+### 🛒 Buy X Get Y (BXGY) Campaigns
+
 - Set up quantity-based discounts (e.g., Buy 2 Get 1 Free)
 - Flexible product selection and discount rules
 - Automatic cart transformation
 
 ### 📊 Volume Discounts
+
 - Tiered pricing based on quantity purchased
 - Custom discount percentages per tier
 - Seamless cart integration
 
 ### 🎯 Motivator Widgets
+
 - Progress bars showing customers how close they are to rewards
 - Theme-integrated blocks for cart and product pages
 - Real-time updates as customers shop
@@ -27,12 +31,14 @@ A comprehensive Shopify app that enables merchants to create automated discount 
 ## Merchant Installation & Usage
 
 ### For Merchants
+
 1. **Install the App**: Search for "Free Gift Tiers" in the Shopify App Store
 2. **Configure Campaigns**: Navigate to the app dashboard to set up your first campaign
 3. **Add Theme Blocks**: Use the Theme Integration guide to add progress bars to your store
 4. **Monitor Performance**: Track campaign effectiveness through the built-in analytics
 
 ### Key Features for Merchants
+
 - **Easy Setup**: Intuitive interface for configuring campaigns
 - **Real-time Testing**: Validate gift products and thresholds before going live
 - **Theme Integration**: Add motivational widgets to encourage larger orders
@@ -41,6 +47,7 @@ A comprehensive Shopify app that enables merchants to create automated discount 
 ## Development Setup
 
 ### Prerequisites
+
 - Node.js 18.20+ or 20.10+
 - Shopify Partner Account
 - Test Store (Development or Plus Sandbox)
@@ -86,21 +93,26 @@ shopify app logs
 ## Production Deployment
 
 ### Environment Variables
+
 Ensure these are set in production:
+
 - `SHOPIFY_API_KEY`
-- `SHOPIFY_API_SECRET` 
+- `SHOPIFY_API_SECRET`
 - `SHOPIFY_APP_URL`
 - `SESSION_SECRET`
 - `DATABASE_URL`
 - `NODE_ENV=production`
 
 ### Database Setup
+
 The app uses Prisma with SQLite by default. For production, consider:
+
 - PostgreSQL (recommended)
 - MySQL
 - MongoDB
 
 ### Hosting Options
+
 - **Vercel**: Use the Vercel preset for optimal performance
 - **Heroku**: Follow Shopify's deployment documentation
 - **Fly.io**: Great for full-stack apps with database needs
@@ -109,12 +121,14 @@ The app uses Prisma with SQLite by default. For production, consider:
 ## App Architecture
 
 ### Core Components
+
 - **Campaign Management**: Configure and manage discount campaigns
 - **Shopify Functions**: Serverless functions for cart transformations
 - **Theme Extensions**: Progress bars and motivational widgets
 - **Admin Dashboard**: Analytics and campaign monitoring
 
 ### Technical Stack
+
 - **Frontend**: Remix + React + Polaris
 - **Backend**: Node.js + Prisma
 - **Functions**: Shopify Functions (TypeScript)
@@ -141,6 +155,7 @@ Before you begin, you'll need the following:
 2. **Shopify Partner Account**: [Create an account](https://partners.shopify.com/signup) if you don't have one.
 3. **Test Store**: Set up either a [development store](https://help.shopify.com/en/partners/dashboard/development-stores#create-a-development-store) or a [Shopify Plus sandbox store](https://help.shopify.com/en/partners/dashboard/managing-stores/plus-sandbox-store) for testing your app.
 4. **Shopify CLI**: [Download and install](https://shopify.dev/docs/apps/tools/cli/getting-started) it if you haven't already.
+
 ```shell
 npm install -g @shopify/cli@latest
 ```
@@ -156,8 +171,6 @@ shopify app init --template=https://github.com/Shopify/shopify-app-template-remi
 ```shell
 shopify app dev
 ```
-
-
 
 Local development is powered by [the Shopify CLI](https://shopify.dev/docs/apps/tools/cli). It logs into your partners account, connects to an app, provides environment variables, updates remote config, creates a tunnel and provides commands to generate extensions.
 
@@ -209,8 +222,8 @@ The database that works best for you depends on the data your app needs and how 
 You can run your database of choice on a server yourself or host it with a SaaS company.
 Here's a short list of databases providers that provide a free tier to get started:
 
-| Database   | Type             | Hosters                                                                                                                                                                                                                               |
-| ---------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Database   | Type             | Hosters                                                                                                                                                                                                                                    |
+| ---------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | MySQL      | SQL              | [Digital Ocean](https://www.digitalocean.com/products/managed-databases-mysql), [Planet Scale](https://planetscale.com/), [Amazon Aurora](https://aws.amazon.com/rds/aurora/), [Google Cloud SQL](https://cloud.google.com/sql/docs/mysql) |
 | PostgreSQL | SQL              | [Digital Ocean](https://www.digitalocean.com/products/managed-databases-postgresql), [Amazon Aurora](https://aws.amazon.com/rds/aurora/), [Google Cloud SQL](https://cloud.google.com/sql/docs/postgres)                                   |
 | Redis      | Key-value        | [Digital Ocean](https://www.digitalocean.com/products/managed-databases-redis), [Amazon MemoryDB](https://aws.amazon.com/memorydb/)                                                                                                        |
@@ -300,7 +313,7 @@ Shopify apps are best when they are embedded in the Shopify Admin, which is how 
 2. Pass `isEmbeddedApp: false` to `shopifyApp()` in `./app/shopify.server.js|ts`.
 3. Change the `isEmbeddedApp` prop to `isEmbeddedApp={false}` for the `AppProvider` in `/app/routes/app.jsx|tsx`.
 4. Remove the `@shopify/app-bridge-react` dependency from [package.json](./package.json) and `vite.config.ts|js`.
-5. Remove anything imported from `@shopify/app-bridge-react`.  For example: `NavMenu`, `TitleBar` and `useAppBridge`.
+5. Remove anything imported from `@shopify/app-bridge-react`. For example: `NavMenu`, `TitleBar` and `useAppBridge`.
 
 ### OAuth goes into a loop when I change my app's scopes
 
@@ -327,9 +340,9 @@ pnpm run deploy
 
 ### My shop-specific webhook subscriptions aren't updated
 
-If you are registering webhooks in the `afterAuth` hook, using `shopify.registerWebhooks`, you may find that your subscriptions aren't being updated.  
+If you are registering webhooks in the `afterAuth` hook, using `shopify.registerWebhooks`, you may find that your subscriptions aren't being updated.
 
-Instead of using the `afterAuth` hook, the recommended approach is to declare app-specific webhooks in the `shopify.app.toml` file.  This approach is easier since Shopify will automatically update changes to webhook subscriptions every time you run `deploy` (e.g: `npm run deploy`).  Please read these guides to understand more:
+Instead of using the `afterAuth` hook, the recommended approach is to declare app-specific webhooks in the `shopify.app.toml` file. This approach is easier since Shopify will automatically update changes to webhook subscriptions every time you run `deploy` (e.g: `npm run deploy`). Please read these guides to understand more:
 
 1. [app-specific vs shop-specific webhooks](https://shopify.dev/docs/apps/build/webhooks/subscribe#app-specific-subscriptions)
 2. [Create a subscription tutorial](https://shopify.dev/docs/apps/build/webhooks/subscribe/get-started?framework=remix&deliveryMethod=https)
@@ -343,7 +356,7 @@ During normal development, the app won't need to re-authenticate most of the tim
 
 ### Admin created webhook failing HMAC validation
 
-Webhooks subscriptions created in the [Shopify admin](https://help.shopify.com/en/manual/orders/notifications/webhooks) will fail HMAC validation. This is because the webhook payload is not signed with your app's secret key.  There are 2 solutions:
+Webhooks subscriptions created in the [Shopify admin](https://help.shopify.com/en/manual/orders/notifications/webhooks) will fail HMAC validation. This is because the webhook payload is not signed with your app's secret key. There are 2 solutions:
 
 1. Use [app-specific webhooks](https://shopify.dev/docs/apps/build/webhooks/subscribe#app-specific-subscriptions) defined in your toml file instead (recommended)
 2. Create [webhook subscriptions](https://shopify.dev/docs/api/shopify-app-remix/v1/guide-webhooks) using the `shopifyApp` object.
@@ -429,7 +442,7 @@ You don't have to make any changes to the code in order to be able to upgrade Po
 ### "nbf" claim timestamp check failed
 
 This error will occur of the `nbf` claim timestamp check failed. This is because the JWT token is expired.
-If you  are consistently getting this error, it could be that the clock on your machine is not in sync with the server.
+If you are consistently getting this error, it could be that the clock on your machine is not in sync with the server.
 
 To fix this ensure you have enabled `Set time and date automatically` in the `Date and Time` settings on your computer.
 
