@@ -44,6 +44,41 @@ A comprehensive Shopify app that enables merchants to create automated discount 
 - **Theme Integration**: Add motivational widgets to encourage larger orders
 - **Analytics**: Track campaign performance and customer engagement
 
+## Listing Preview
+
+### Preview App Store Listing
+
+Generate a local preview of how the app will appear in the Shopify App Store:
+
+```bash
+npm run preview:listing
+```
+
+This will:
+- Parse the `STORE_LISTING.md` file
+- Generate a Shopify-style preview at `marketing/preview/index.html`
+- Start a local server at `http://localhost:7788`
+
+The preview includes:
+- **Hero Section**: App icon, title, tagline, and metadata
+- **Two-Column Layout**: Pricing plans on the left, full description on the right
+- **Screenshots Grid**: Auto-discovered screenshots from `marketing/screenshots/`
+- **Responsive Design**: Mobile-friendly layout matching Shopify's style
+
+### Customizing the Preview
+
+Edit `marketing/preview/config.json` to customize:
+- App title and tagline
+- Pricing plans
+- Works with integrations
+- Support information
+
+The build script automatically:
+- Converts Markdown to HTML
+- Discovers screenshots
+- Generates responsive layout
+- Applies Shopify-style CSS
+
 ## Development Setup
 
 ### Prerequisites

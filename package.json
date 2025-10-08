@@ -16,7 +16,8 @@
     "shopify": "shopify",
     "prisma": "prisma",
     "graphql-codegen": "graphql-codegen",
-    "vite": "vite"
+    "vite": "vite",
+    "preview:listing": "node marketing/preview/build.js && npx http-server marketing/preview -p 7788 -c-1"
   },
   "type": "module",
   "engines": {
@@ -49,6 +50,8 @@
     "@types/react-dom": "^18.2.14",
     "eslint": "^8.42.0",
     "eslint-config-prettier": "^10.0.1",
+    "http-server": "^14.1.1",
+    "marked": "^12.0.0",
     "prettier": "^3.2.4",
     "typescript": "^5.2.2",
     "vite": "^6.2.2"

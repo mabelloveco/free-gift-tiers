@@ -1,0 +1,16 @@
+{
+  "title": "FreeGiftTiers",
+  "tagline": "Boost sales with automatic free gifts, BOGO, and tiered discounts.",
+  "worksWith": ["Checkout", "Slide Carts", "UpCart", "Easy Bundles", "Gem Pages"],
+  "languages": ["English"],
+  "category": "Discounts",
+  "subcategory": "Promotions - Other",
+  "supportEmail": "orders@mabelloveco.com",
+  "developer": "Mabel Love Co.",
+  "pricing": [
+    {"name": "Free", "price": "Free", "notes": "1 active campaign"},
+    {"name": "Basic", "price": "$19/mo", "notes": "GWP, BOGO, tiered"},
+    {"name": "Pro", "price": "$39/mo", "notes": "Volume tiers, auto add"},
+    {"name": "Plus", "price": "$49/mo", "notes": "Checkout upsell, Plus"}
+  ]
+}
