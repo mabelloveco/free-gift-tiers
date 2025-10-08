@@ -2,7 +2,7 @@
 
 client_id = "b5ddcd3bd79f97ee9540d293a0031115"
 name = "FreeGiftTiers"
-application_url = "https://example.com"
+application_url = "https://legislature-eastern-salary-skiing.trycloudflare.com"
 embedded = true
 
 [build]
@@ -24,4 +24,4 @@ api_version = "2026-01"
 scopes = "write_products,write_discounts,read_discounts,read_orders,write_cart_transforms,read_customer_events,write_customers,read_themes,read_metaobjects,write_metaobjects"
 
 [auth]
-redirect_urls = [ "https://example.com/api/auth" ]
+redirect_urls = [ "https://legislature-eastern-salary-skiing.trycloudflare.com/api/auth" ]

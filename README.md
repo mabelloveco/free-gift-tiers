@@ -1,17 +1,135 @@
-# Shopify App Template - Remix
+# Free Gift Tiers - Shopify App
 
-> [!NOTE]
-> **Remix is now React Router.** As of [React Router v7](https://remix.run/blog/merging-remix-and-react-router), Remix and React Router have merged.
-> 
-> For new projects, use the **[Shopify App Template - React Router](https://github.com/Shopify/shopify-app-template-react-router)** instead.
-> 
-> To migrate your existing Remix app, follow the **[migration guide](https://github.com/Shopify/shopify-app-template-react-router/wiki/Upgrading-from-Remix)**.
+A comprehensive Shopify app that enables merchants to create automated discount campaigns including Free Gift campaigns, Buy X Get Y (BXGY) promotions, Volume discounts, and motivational progress widgets.
 
-This is a template for building a [Shopify app](https://shopify.dev/docs/apps/getting-started) using the [Remix](https://remix.run) framework.
+## What This App Does
 
-Rather than cloning this repo, you can use your preferred package manager and the Shopify CLI with [these steps](https://shopify.dev/docs/apps/getting-started/create).
+### 🎁 Free Gift Campaigns
+- Automatically add free gifts when customers reach a spending threshold
+- Configure gift products and minimum order values
+- Real-time progress tracking for customers
 
-Visit the [`shopify.dev` documentation](https://shopify.dev/docs/api/shopify-app-remix) for more details on the Remix app package.
+### 🛒 Buy X Get Y (BXGY) Campaigns  
+- Set up quantity-based discounts (e.g., Buy 2 Get 1 Free)
+- Flexible product selection and discount rules
+- Automatic cart transformation
+
+### 📊 Volume Discounts
+- Tiered pricing based on quantity purchased
+- Custom discount percentages per tier
+- Seamless cart integration
+
+### 🎯 Motivator Widgets
+- Progress bars showing customers how close they are to rewards
+- Theme-integrated blocks for cart and product pages
+- Real-time updates as customers shop
+
+## Merchant Installation & Usage
+
+### For Merchants
+1. **Install the App**: Search for "Free Gift Tiers" in the Shopify App Store
+2. **Configure Campaigns**: Navigate to the app dashboard to set up your first campaign
+3. **Add Theme Blocks**: Use the Theme Integration guide to add progress bars to your store
+4. **Monitor Performance**: Track campaign effectiveness through the built-in analytics
+
+### Key Features for Merchants
+- **Easy Setup**: Intuitive interface for configuring campaigns
+- **Real-time Testing**: Validate gift products and thresholds before going live
+- **Theme Integration**: Add motivational widgets to encourage larger orders
+- **Analytics**: Track campaign performance and customer engagement
+
+## Development Setup
+
+### Prerequisites
+- Node.js 18.20+ or 20.10+
+- Shopify Partner Account
+- Test Store (Development or Plus Sandbox)
+- Shopify CLI
+
+### Local Development Commands
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+# or
+shopify app dev
+
+# Build for production
+npm run build
+
+# Deploy to Shopify
+npm run deploy
+
+# Run linting
+npm run lint
+```
+
+### Key Development Commands
+
+```bash
+# Generate new extensions
+shopify app generate
+
+# Link to existing app
+shopify app config link
+
+# Check app status
+shopify app info
+
+# View logs
+shopify app logs
+```
+
+## Production Deployment
+
+### Environment Variables
+Ensure these are set in production:
+- `SHOPIFY_API_KEY`
+- `SHOPIFY_API_SECRET` 
+- `SHOPIFY_APP_URL`
+- `SESSION_SECRET`
+- `DATABASE_URL`
+- `NODE_ENV=production`
+
+### Database Setup
+The app uses Prisma with SQLite by default. For production, consider:
+- PostgreSQL (recommended)
+- MySQL
+- MongoDB
+
+### Hosting Options
+- **Vercel**: Use the Vercel preset for optimal performance
+- **Heroku**: Follow Shopify's deployment documentation
+- **Fly.io**: Great for full-stack apps with database needs
+- **Railway**: Simple deployment with built-in database support
+
+## App Architecture
+
+### Core Components
+- **Campaign Management**: Configure and manage discount campaigns
+- **Shopify Functions**: Serverless functions for cart transformations
+- **Theme Extensions**: Progress bars and motivational widgets
+- **Admin Dashboard**: Analytics and campaign monitoring
+
+### Technical Stack
+- **Frontend**: Remix + React + Polaris
+- **Backend**: Node.js + Prisma
+- **Functions**: Shopify Functions (TypeScript)
+- **Database**: SQLite (dev) / PostgreSQL (production)
+- **Authentication**: Shopify OAuth + Session Storage
+
+## Support & Documentation
+
+- **Theme Integration**: See `/app/docs` in the app for setup instructions
+- **API Documentation**: Built-in GraphQL playground
+- **Troubleshooting**: Comprehensive error handling and logging
+
+---
+
+> **Note**: This app is built on the Shopify App Template - Remix. For new projects, consider using the React Router template instead.
 
 ## Quick start
 

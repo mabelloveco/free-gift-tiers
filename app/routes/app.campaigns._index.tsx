@@ -1,118 +1,268 @@
-import type { LoaderFunctionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useLoaderData, useNavigate } from "@remix-run/react";
+import { useLoaderData, useActionData, useNavigation, useSubmit } from "@remix-run/react";
+import { useState, useCallback } from "react";
 import {
   Page,
   Layout,
   Card,
-  IndexTable,
-  Badge,
+  FormLayout,
+  TextField,
+  Checkbox,
   Button,
-  EmptyState,
-  InlineStack,
+  Banner,
+  BlockStack,
   Text,
+  InlineStack,
 } from "@shopify/polaris";
 import { TitleBar } from "@shopify/app-bridge-react";
 import { authenticate } from "../shopify.server";
-import { prisma } from "../db.server";
+import { getConfig, saveConfig } from "../models/giftTiers.server";
+import type { GiftTiersConfig, GiftTiersFormData } from "../types/gift-tiers";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const { session } = await authenticate.admin(request);
+  const { admin } = await authenticate.admin(request);
+  
+  const config = await getConfig(admin);
+  
+  return json({ config });
+};
 
-  const campaigns = await prisma.campaign.findMany({
-    where: { shop: session.shop },
-    orderBy: { createdAt: "desc" },
-    include: {
-      _count: {
-        select: { events: true },
-      },
-    },
-  });
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const { admin } = await authenticate.admin(request);
+  const formData = await request.formData();
+  const action = formData.get("_action") as string;
 
-  return json({
-    campaigns: campaigns.map((c) => ({
-      ...c,
-      eventCount: c._count.events,
-    })),
-  });
+  if (action === "save") {
+    try {
+      const enabled = formData.get("enabled") === "true";
+      const threshold = formData.get("threshold") as string;
+      const giftVariantId = formData.get("giftVariantId") as string;
+      const title = formData.get("title") as string;
+
+      // Validation
+      const errors: Record<string, string> = {};
+      
+      if (!title.trim()) {
+        errors.title = "Campaign title is required";
+      }
+      
+      if (!giftVariantId.trim()) {
+        errors.giftVariantId = "Gift variant ID is required";
+      }
+      
+      const thresholdValue = parseFloat(threshold);
+      if (isNaN(thresholdValue) || thresholdValue <= 0) {
+        errors.threshold = "Threshold must be a positive number";
+      }
+
+      if (Object.keys(errors).length > 0) {
+        return json({ errors, success: false });
+      }
+
+      const config: GiftTiersConfig = {
+        enabled,
+        thresholdCents: Math.round(thresholdValue * 100),
+        giftVariantId: giftVariantId.trim(),
+        title: title.trim(),
+      };
+
+      await saveConfig(admin, config);
+      
+      return json({ success: true, message: "Campaign configuration saved successfully!" });
+    } catch (error) {
+      console.error("Error saving config:", error);
+      return json({ 
+        success: false, 
+        message: "Failed to save configuration. Please try again." 
+      });
+    }
+  }
+
+  if (action === "test") {
+    try {
+      const giftVariantId = formData.get("giftVariantId") as string;
+      
+      if (!giftVariantId.trim()) {
+        return json({ 
+          success: false, 
+          message: "Please enter a gift variant ID to test" 
+        });
+      }
+
+      // Import the validation function
+      const { validateGiftVariant } = await import("../models/giftTiers.server");
+      const isValid = await validateGiftVariant(admin, giftVariantId.trim());
+      
+      if (isValid) {
+        return json({ 
+          success: true, 
+          message: "Gift variant is valid and exists in your store!" 
+        });
+      } else {
+        return json({ 
+          success: false, 
+          message: "Gift variant not found. Please check the variant ID." 
+        });
+      }
+    } catch (error) {
+      console.error("Error testing variant:", error);
+      return json({ 
+        success: false, 
+        message: "Failed to validate gift variant. Please try again." 
+      });
+    }
+  }
+
+  return json({ success: false, message: "Invalid action" });
 };
 
 export default function CampaignsIndex() {
-  const { campaigns } = useLoaderData<typeof loader>();
-  const navigate = useNavigate();
+  const { config } = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>();
+  const navigation = useNavigation();
+  const submit = useSubmit();
 
-  const resourceName = {
-    singular: "campaign",
-    plural: "campaigns",
-  };
+  const [formData, setFormData] = useState<GiftTiersFormData>({
+    enabled: config?.enabled ?? false,
+    threshold: config ? (config.thresholdCents / 100).toString() : "",
+    giftVariantId: config?.giftVariantId ?? "",
+    title: config?.title ?? "",
+  });
 
-  const rowMarkup = campaigns.map((campaign, index) => (
-    <IndexTable.Row
-      id={campaign.id}
-      key={campaign.id}
-      position={index}
-      onClick={() => navigate(`/app/campaigns/${campaign.type}/${campaign.id}`)}
-    >
-      <IndexTable.Cell>
-        <Text variant="bodyMd" fontWeight="bold" as="span">
-          {campaign.title}
-        </Text>
-      </IndexTable.Cell>
-      <IndexTable.Cell>
-        <Badge tone={campaign.status === "active" ? "success" : "info"}>
-          {campaign.status}
-        </Badge>
-      </IndexTable.Cell>
-      <IndexTable.Cell>
-        <Badge>{campaign.type.replace("_", " ")}</Badge>
-      </IndexTable.Cell>
-      <IndexTable.Cell>{campaign.eventCount}</IndexTable.Cell>
-      <IndexTable.Cell>
-        {new Date(campaign.createdAt).toLocaleDateString()}
-      </IndexTable.Cell>
-    </IndexTable.Row>
-  ));
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const handleFieldChange = useCallback((field: keyof GiftTiersFormData, value: string | boolean) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: "" }));
+    }
+  }, [errors]);
+
+  const handleSave = useCallback(() => {
+    const form = new FormData();
+    form.append("_action", "save");
+    form.append("enabled", formData.enabled.toString());
+    form.append("threshold", formData.threshold);
+    form.append("giftVariantId", formData.giftVariantId);
+    form.append("title", formData.title);
+    
+    submit(form, { method: "post" });
+  }, [formData, submit]);
+
+  const handleTest = useCallback(() => {
+    const form = new FormData();
+    form.append("_action", "test");
+    form.append("giftVariantId", formData.giftVariantId);
+    
+    submit(form, { method: "post" });
+  }, [formData.giftVariantId, submit]);
+
+  const isLoading = navigation.state === "submitting";
+  const displayErrors = actionData?.errors || errors;
 
   return (
     <Page>
-      <TitleBar title="All Campaigns">
-        <button
-          variant="primary"
-          onClick={() => navigate("/app")}
-        >
-          Create campaign
-        </button>
-      </TitleBar>
+      <TitleBar title="Free Gift Tiers Campaign" />
+      
+      {actionData?.message && (
+        <Layout>
+          <Layout.Section>
+            <Banner
+              title={actionData.success ? "Success" : "Error"}
+              tone={actionData.success ? "success" : "critical"}
+              onDismiss={() => {}}
+            >
+              <p>{actionData.message}</p>
+            </Banner>
+          </Layout.Section>
+        </Layout>
+      )}
+
       <Layout>
         <Layout.Section>
-          <Card padding="0">
-            {campaigns.length === 0 ? (
-              <EmptyState
-                heading="Create your first campaign"
-                action={{
-                  content: "Create campaign",
-                  onAction: () => navigate("/app"),
-                }}
-                image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
-              >
-                <p>Set up automatic discounts and free gifts for your store.</p>
-              </EmptyState>
-            ) : (
-              <IndexTable
-                resourceName={resourceName}
-                itemCount={campaigns.length}
-                headings={[
-                  { title: "Title" },
-                  { title: "Status" },
-                  { title: "Type" },
-                  { title: "Events" },
-                  { title: "Created" },
-                ]}
-                selectable={false}
-              >
-                {rowMarkup}
-              </IndexTable>
-            )}
+          <Card>
+            <BlockStack gap="400">
+              <Text as="h2" variant="headingMd">
+                Campaign Configuration
+              </Text>
+              
+              <FormLayout>
+                <Checkbox
+                  label="Enable Free Gift Campaign"
+                  checked={formData.enabled}
+                  onChange={(checked) => handleFieldChange("enabled", checked)}
+                />
+                
+                <TextField
+                  label="Campaign Title"
+                  value={formData.title}
+                  onChange={(value) => handleFieldChange("title", value)}
+                  error={displayErrors.title}
+                  placeholder="e.g., Free Gift Over $50"
+                  autoComplete="off"
+                />
+                
+                <TextField
+                  label="Threshold ($)"
+                  type="number"
+                  value={formData.threshold}
+                  onChange={(value) => handleFieldChange("threshold", value)}
+                  error={displayErrors.threshold}
+                  placeholder="50.00"
+                  prefix="$"
+                  autoComplete="off"
+                />
+                
+                <TextField
+                  label="Gift Product Variant ID"
+                  value={formData.giftVariantId}
+                  onChange={(value) => handleFieldChange("giftVariantId", value)}
+                  error={displayErrors.giftVariantId}
+                  placeholder="gid://shopify/ProductVariant/123456789"
+                  helpText="Find this in your product's variant details in Shopify Admin"
+                  autoComplete="off"
+                />
+              </FormLayout>
+              
+              <InlineStack gap="200">
+                <Button
+                  variant="primary"
+                  onClick={handleSave}
+                  loading={isLoading && navigation.formData?.get("_action") === "save"}
+                  disabled={!formData.title.trim() || !formData.giftVariantId.trim() || !formData.threshold.trim()}
+                >
+                  Save Configuration
+                </Button>
+                
+                <Button
+                  onClick={handleTest}
+                  loading={isLoading && navigation.formData?.get("_action") === "test"}
+                  disabled={!formData.giftVariantId.trim()}
+                >
+                  Test Campaign
+                </Button>
+              </InlineStack>
+            </BlockStack>
+          </Card>
+        </Layout.Section>
+        
+        <Layout.Section variant="oneThird">
+          <Card>
+            <BlockStack gap="300">
+              <Text as="h3" variant="headingSm">
+                How it works
+              </Text>
+              <Text as="p" variant="bodyMd" tone="subdued">
+                When customers add items to their cart that meet or exceed your threshold, 
+                they'll automatically receive the specified gift product for free.
+              </Text>
+              <Text as="p" variant="bodyMd" tone="subdued">
+                The campaign runs automatically through Shopify Functions and doesn't 
+                require any additional setup once configured.
+              </Text>
+            </BlockStack>
           </Card>
         </Layout.Section>
       </Layout>
