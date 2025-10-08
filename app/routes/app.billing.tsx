@@ -17,88 +17,30 @@ import {
 } from "@shopify/polaris";
 import { TitleBar } from "@shopify/app-bridge-react";
 import { authenticate } from "../shopify.server";
-import { prisma } from "../db.server";
+import { 
+  getBillingPlan, 
+  createBillingPlan, 
+  cancelBillingPlan,
+  getAllPlans,
+  getPlanDetails,
+  getUsageStats,
+  type BillingPlan
+} from "../models/billing.server";
 
-const PLANS = {
-  free: {
-    name: "Free",
-    price: 0,
-    features: [
-      "1 active campaign",
-      "Basic analytics",
-      "Free gift tiers only",
-      "Community support",
-    ],
-    limits: {
-      campaigns: 1,
-      events: 100,
-    },
-  },
-  grow: {
-    name: "Grow",
-    price: 19.99,
-    features: [
-      "5 active campaigns",
-      "BXGY campaigns",
-      "Volume discounts",
-      "Advanced analytics",
-      "Email support",
-    ],
-    limits: {
-      campaigns: 5,
-      events: 1000,
-    },
-  },
-  advanced: {
-    name: "Advanced",
-    price: 49.99,
-    features: [
-      "15 active campaigns",
-      "All campaign types",
-      "Priority support",
-      "Custom branding",
-      "API access",
-    ],
-    limits: {
-      campaigns: 15,
-      events: 10000,
-    },
-  },
-  plus: {
-    name: "Plus",
-    price: 99.99,
-    features: [
-      "Unlimited campaigns",
-      "Unlimited events",
-      "Dedicated support",
-      "Custom development",
-      "White-label solution",
-    ],
-    limits: {
-      campaigns: Infinity,
-      events: Infinity,
-    },
-  },
-};
+// Billing plans are now imported from billing.server.ts
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(request);
 
-  let billingPlan = await prisma.billingPlan.findUnique({
-    where: { shop: session.shop },
+  const billingPlan = await getBillingPlan(session.shop);
+  const plans = getAllPlans();
+  const usageStats = await getUsageStats(session.shop);
+
+  return json({ 
+    billingPlan: billingPlan || { plan: "free", status: "active" },
+    plans,
+    usageStats
   });
-
-  if (!billingPlan) {
-    billingPlan = await prisma.billingPlan.create({
-      data: {
-        shop: session.shop,
-        plan: "free",
-        status: "active",
-      },
-    });
-  }
-
-  return json({ billingPlan, plans: PLANS });
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -106,39 +48,46 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
   const selectedPlan = String(formData.get("plan"));
 
-  if (selectedPlan === "free") {
-    // Cancel current subscription
-    await prisma.billingPlan.update({
-      where: { shop: session.shop },
-      data: {
-        plan: "free",
-        billingId: null,
-      },
+  try {
+    if (selectedPlan === "free") {
+      // Cancel current subscription and downgrade to free
+      await cancelBillingPlan(session.shop);
+      return json({ success: true, message: "Plan downgraded to Free" });
+    }
+
+    const planDetails = getPlanDetails(selectedPlan);
+    if (!planDetails) {
+      return json({ error: "Invalid plan selected" }, { status: 400 });
+    }
+
+    // Create Shopify AppSubscription
+    const billingResponse = await billing.request({
+      plan: selectedPlan,
+      amount: planDetails.price,
+      currencyCode: "USD",
+      interval: billing.Interval.Every30Days,
     });
-    return json({ success: true });
+
+    if (billingResponse?.confirmationUrl) {
+      // Store pending subscription
+      await createBillingPlan(session.shop, selectedPlan, null);
+      return redirect(billingResponse.confirmationUrl);
+    }
+
+    return json({ error: "Failed to create billing subscription" }, { status: 400 });
+  } catch (error) {
+    console.error("Billing error:", error);
+    return json({ 
+      error: "An error occurred while processing your billing request" 
+    }, { status: 500 });
   }
-
-  const planDetails = PLANS[selectedPlan as keyof typeof PLANS];
-
-  // Create Shopify billing charge
-  const billingResponse = await billing.request({
-    plan: selectedPlan,
-    amount: planDetails.price,
-    currencyCode: "USD",
-    interval: billing.Interval.Every30Days,
-  });
-
-  if (billingResponse?.confirmationUrl) {
-    return redirect(billingResponse.confirmationUrl);
-  }
-
-  return json({ error: "Failed to create billing charge" }, { status: 400 });
 };
 
 export default function Billing() {
-  const { billingPlan, plans } = useLoaderData<typeof loader>();
+  const { billingPlan, plans, usageStats } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const submit = useSubmit();
+  
   const handleSelectPlan = (plan: string) => {
     const formData = new FormData();
     formData.append("plan", plan);
@@ -173,11 +122,31 @@ export default function Billing() {
                   </BlockStack>
                   {billingPlan.plan !== "free" && (
                     <Text as="p" variant="headingLg">
-                      ${plans[billingPlan.plan as keyof typeof plans].price}
+                      ${plans.find(p => p.id === billingPlan.plan)?.price || 0}
                       /month
                     </Text>
                   )}
                 </InlineStack>
+                
+                <Divider />
+                
+                <BlockStack gap="300">
+                  <Text as="h3" variant="headingSm">Usage Statistics</Text>
+                  <InlineGrid columns={{ xs: 1, sm: 2 }} gap="400">
+                    <BlockStack gap="200">
+                      <Text as="p" variant="bodyMd" tone="subdued">Active Campaigns</Text>
+                      <Text as="p" variant="headingLg">
+                        {usageStats.campaigns.current} / {usageStats.campaigns.limit === Infinity ? '∞' : usageStats.campaigns.limit}
+                      </Text>
+                    </BlockStack>
+                    <BlockStack gap="200">
+                      <Text as="p" variant="bodyMd" tone="subdued">Events (30 days)</Text>
+                      <Text as="p" variant="headingLg">
+                        {usageStats.events.current} / {usageStats.events.limit === Infinity ? '∞' : usageStats.events.limit}
+                      </Text>
+                    </BlockStack>
+                  </InlineGrid>
+                </BlockStack>
               </BlockStack>
             </Card>
 
@@ -186,8 +155,8 @@ export default function Billing() {
             </Text>
 
             <InlineGrid columns={{ xs: 1, sm: 2, md: 4 }} gap="400">
-              {Object.entries(plans).map(([key, plan]) => (
-                <Card key={key}>
+              {plans.map((plan) => (
+                <Card key={plan.id}>
                   <BlockStack gap="400">
                     <BlockStack gap="200">
                       <Text as="h3" variant="headingMd">
@@ -213,13 +182,13 @@ export default function Billing() {
 
                     <Button
                       variant={
-                        billingPlan.plan === key ? "primary" : "secondary"
+                        billingPlan.plan === plan.id ? "primary" : "secondary"
                       }
                       fullWidth
-                      disabled={billingPlan.plan === key}
-                      onClick={() => handleSelectPlan(key)}
+                      disabled={billingPlan.plan === plan.id}
+                      onClick={() => handleSelectPlan(plan.id)}
                     >
-                      {billingPlan.plan === key
+                      {billingPlan.plan === plan.id
                         ? "Current Plan"
                         : "Select Plan"}
                     </Button>

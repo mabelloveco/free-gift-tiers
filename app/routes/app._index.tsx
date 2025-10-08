@@ -17,6 +17,7 @@ import {
 import { TitleBar } from "@shopify/app-bridge-react";
 import { authenticate } from "../shopify.server";
 import { prisma } from "../db.server";
+import { getBillingPlan, getUsageStats, getPlanDetails } from "../models/billing.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(request);
@@ -59,10 +60,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     {} as Record<string, number>,
   );
 
-  // Get billing plan
-  const billingPlan = await prisma.billingPlan.findUnique({
-    where: { shop: session.shop },
-  });
+  // Get billing plan and usage stats
+  const billingPlan = await getBillingPlan(session.shop);
+  const usageStats = await getUsageStats(session.shop);
+  const planDetails = billingPlan ? getPlanDetails(billingPlan.plan) : null;
 
   return json({
     campaigns: campaigns.map((c) => ({
@@ -77,11 +78,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       activeCampaigns: campaigns.filter((c) => c.status === "active").length,
     },
     billingPlan: billingPlan || { plan: "free", status: "active" },
+    usageStats,
+    planDetails,
   });
 };
 
 export default function Index() {
-  const { campaigns, metrics, billingPlan } = useLoaderData<typeof loader>();
+  const { campaigns, metrics, billingPlan, usageStats, planDetails } = useLoaderData<typeof loader>();
 
   return (
     <Page>
@@ -129,13 +132,21 @@ export default function Index() {
                   <Text as="h3" variant="headingSm" tone="subdued">
                     Current Plan
                   </Text>
-                  <Text as="p" variant="headingLg">
+                  <InlineStack gap="200" align="space-between">
                     <Badge tone="success">
                       {billingPlan.plan.toUpperCase()}
                     </Badge>
+                    {planDetails && (
+                      <Text as="span" variant="bodyMd" tone="subdued">
+                        ${planDetails.price}/month
+                      </Text>
+                    )}
+                  </InlineStack>
+                  <Text as="p" variant="bodyMd" tone="subdued">
+                    {usageStats.campaigns.current} / {usageStats.campaigns.limit === Infinity ? '∞' : usageStats.campaigns.limit} campaigns
                   </Text>
                   <Button url="/app/billing" variant="plain" size="slim">
-                    Upgrade
+                    {billingPlan.plan === "free" ? "Upgrade" : "Manage"}
                   </Button>
                 </BlockStack>
               </Card>
