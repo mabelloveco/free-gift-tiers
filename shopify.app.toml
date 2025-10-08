@@ -5,17 +5,6 @@ name = "FreeGiftTiers"
 application_url = "https://legislature-eastern-salary-skiing.trycloudflare.com"
 embedded = true
 
-# App Store Metadata
-[app_store]
-title = "FreeGiftTiers"
-tagline = "Automated free gifts & tiered discounts to boost sales & customer loyalty"
-description = "Transform your store's conversion rates with FreeGiftTiers, the comprehensive discount campaign app that automates free gift rewards and tiered promotions. Create engaging customer experiences that drive higher average order values and build lasting loyalty."
-category = "Discounts"
-subcategory = "Promotions - Other"
-languages = ["English"]
-works_with = ["Checkout", "Slide Carts", "Easy Bundles", "UpCart"]
-support_email = "orders@mabelloveco.com"
-
 [build]
 automatically_update_urls_on_dev = true
 

@@ -94,10 +94,15 @@ The build script automatically:
 # Install dependencies
 npm install
 
-# Start development server
+# Start development server (clean - kills existing processes)
+npm run dev:clean
+# or
 npm run dev
 # or
 shopify app dev
+```
+
+**Note**: Run `npm run dev:clean` to start the Shopify app cleanly without port conflicts.
 
 # Build for production
 npm run build

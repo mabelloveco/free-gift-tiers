@@ -18,7 +18,8 @@
     "graphql-codegen": "graphql-codegen",
     "vite": "vite",
     "preview:listing": "node marketing/preview/build.js && npx http-server marketing/preview -p 7788 -c-1",
-    "preview:listing:auto": "node marketing/preview/build.js && npx http-server marketing/preview -p 7788 -c-1 -o"
+    "preview:listing:auto": "node marketing/preview/build.js && npx http-server marketing/preview -p 7788 -c-1 -o",
+    "dev:clean": "./scripts/dev-clean.sh"
   },
   "type": "module",
   "engines": {
