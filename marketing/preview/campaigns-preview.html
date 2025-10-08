@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreeGiftTiers - Campaigns Page Preview</title>
+    <link rel="stylesheet" href="https://unpkg.com/@shopify/polaris@12.0.0/build/esm/styles.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f6f6f7;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .preview-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .preview-header {
+            background: #1a1a1a;
+            color: white;
+            padding: 16px 24px;
+            border-bottom: 1px solid #333;
+        }
+        .preview-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+        }
+        .preview-content {
+            padding: 24px;
+        }
+        .success-banner {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 12px 16px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .campaign-card {
+            background: white;
+            border: 1px solid #e1e3e5;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .campaign-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0 0 16px 0;
+            color: #1a1a1a;
+        }
+        .form-field {
+            margin-bottom: 16px;
+        }
+        .form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: #1a1a1a;
+        }
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #5c6ac4;
+            box-shadow: 0 0 0 2px rgba(92, 106, 196, 0.1);
+        }
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .checkbox {
+            margin-right: 8px;
+        }
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .btn-primary {
+            background: #5c6ac4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .btn-primary:hover {
+            background: #4f5bb5;
+        }
+        .btn-secondary {
+            background: white;
+            color: #5c6ac4;
+            border: 1px solid #5c6ac4;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .btn-secondary:hover {
+            background: #f8f9fa;
+        }
+        .help-card {
+            background: #f8f9fa;
+            border: 1px solid #e1e3e5;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .help-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0 0 12px 0;
+            color: #1a1a1a;
+        }
+        .help-text {
+            color: #6b7280;
+            line-height: 1.5;
+            margin: 0 0 12px 0;
+        }
+        .help-text:last-child {
+            margin-bottom: 0;
+        }
+        .layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+        .error-message {
+            color: #dc2626;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+        .help-text-small {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-container">
+        <!-- Header -->
+        <div class="preview-header">
+            <h1 class="preview-title">Free Gift Tiers Campaign</h1>
+        </div>
+
+        <!-- Content -->
+        <div class="preview-content">
+            <!-- Success Banner (example) -->
+            <div class="success-banner">
+                <strong>Success:</strong> Campaign configuration saved successfully!
+            </div>
+
+            <div class="layout">
+                <!-- Main Campaign Configuration -->
+                <div>
+                    <div class="campaign-card">
+                        <h2 class="campaign-title">Campaign Configuration</h2>
+                        
+                        <div class="form-field">
+                            <div class="checkbox-container">
+                                <input type="checkbox" class="checkbox" id="enabled" checked>
+                                <label for="enabled" class="form-label">Enable Free Gift Campaign</label>
+                            </div>
+                        </div>
+
+                        <div class="form-field">
+                            <label class="form-label" for="title">Campaign Title</label>
+                            <input 
+                                type="text" 
+                                class="form-input" 
+                                id="title" 
+                                value="Free Gift Over $50"
+                                placeholder="e.g., Free Gift Over $50"
+                            >
+                        </div>
+
+                        <div class="form-field">
+                            <label class="form-label" for="threshold">Threshold ($)</label>
+                            <input 
+                                type="number" 
+                                class="form-input" 
+                                id="threshold" 
+                                value="50.00"
+                                placeholder="50.00"
+                            >
+                        </div>
+
+                        <div class="form-field">
+                            <label class="form-label" for="giftVariantId">Gift Product Variant ID</label>
+                            <input 
+                                type="text" 
+                                class="form-input" 
+                                id="giftVariantId" 
+                                value="gid://shopify/ProductVariant/123456789"
+                                placeholder="gid://shopify/ProductVariant/123456789"
+                            >
+                            <div class="help-text-small">
+                                Find this in your product's variant details in Shopify Admin
+                            </div>
+                        </div>
+
+                        <div class="button-group">
+                            <button class="btn-primary">Save Configuration</button>
+                            <button class="btn-secondary">Test Campaign</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Help Section -->
+                <div>
+                    <div class="help-card">
+                        <h3 class="help-title">How it works</h3>
+                        <p class="help-text">
+                            When customers add items to their cart that meet or exceed your
+                            threshold, they'll automatically receive the specified gift
+                            product for free.
+                        </p>
+                        <p class="help-text">
+                            The campaign runs automatically through Shopify Functions and
+                            doesn't require any additional setup once configured.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add some interactivity to show the Polaris-like behavior
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkbox = document.getElementById('enabled');
+            const inputs = document.querySelectorAll('.form-input');
+            
+            // Simulate form validation
+            inputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    if (this.value.trim() === '') {
+                        this.style.borderColor = '#dc2626';
+                    } else {
+                        this.style.borderColor = '#d1d5db';
+                    }
+                });
+            });
+
+            // Simulate button states
+            const saveBtn = document.querySelector('.btn-primary');
+            const testBtn = document.querySelector('.btn-secondary');
+            
+            saveBtn.addEventListener('click', function() {
+                this.textContent = 'Saving...';
+                this.disabled = true;
+                setTimeout(() => {
+                    this.textContent = 'Save Configuration';
+                    this.disabled = false;
+                }, 2000);
+            });
+
+            testBtn.addEventListener('click', function() {
+                this.textContent = 'Testing...';
+                this.disabled = true;
+                setTimeout(() => {
+                    this.textContent = 'Test Campaign';
+                    this.disabled = false;
+                }, 1500);
+            });
+        });
+    </script>
+</body>
+</html>
