@@ -25,8 +25,11 @@ export default function App() {
           Home
         </Link>
         <Link to="/app/campaigns">Campaigns</Link>
+        <Link to="/app/analytics">Analytics</Link>
+        <Link to="/app/settings">Settings</Link>
+        <Link to="/app/billing">Billing</Link>
         <Link to="/app/docs">Theme Integration</Link>
-        <Link to="/app/additional">Additional page</Link>
+        <a href="/support" target="_blank" rel="noopener noreferrer">Support</a>
       </NavMenu>
       <Outlet />
     </AppProvider>

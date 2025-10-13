@@ -111,6 +111,64 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     }
   }
 
+  if (action === "toggle") {
+    try {
+      const campaignId = formData.get("campaignId") as string;
+      const currentStatus = formData.get("currentStatus") as string;
+      const newStatus = currentStatus === "active" ? "paused" : "active";
+
+      // If activating, check if they can activate
+      if (newStatus === "active") {
+        const { canActivateCampaign } = await import("../models/billing.server");
+        const canActivate = await canActivateCampaign(session.shop);
+        
+        if (!canActivate) {
+          return json({
+            success: false,
+            message: "You've reached your active campaign limit. Please pause another campaign or upgrade your plan.",
+          });
+        }
+      }
+
+      await prisma.campaign.update({
+        where: { id: campaignId, shop: session.shop },
+        data: { status: newStatus },
+      });
+
+      return json({
+        success: true,
+        message: `Campaign ${newStatus === "active" ? "activated" : "paused"} successfully!`,
+      });
+    } catch (error) {
+      console.error("Error toggling campaign:", error);
+      return json({
+        success: false,
+        message: "Failed to update campaign status. Please try again.",
+      });
+    }
+  }
+
+  if (action === "delete") {
+    try {
+      const campaignId = formData.get("campaignId") as string;
+
+      await prisma.campaign.delete({
+        where: { id: campaignId, shop: session.shop },
+      });
+
+      return json({
+        success: true,
+        message: "Campaign deleted successfully!",
+      });
+    } catch (error) {
+      console.error("Error deleting campaign:", error);
+      return json({
+        success: false,
+        message: "Failed to delete campaign. Please try again.",
+      });
+    }
+  }
+
   if (action === "test") {
     try {
       const giftVariantId = formData.get("giftVariantId") as string;
@@ -165,6 +223,8 @@ export default function CampaignsIndex() {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showBanner, setShowBanner] = useState(true);
+  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "paused" | "archived">("all");
 
   const handleFieldChange = useCallback(
     (field: keyof GiftTiersFormData, value: string | boolean) => {
@@ -226,16 +286,114 @@ export default function CampaignsIndex() {
     }
   };
 
-  const campaignRows = campaigns.map((campaign) => [
-    campaign.title,
+  const handleToggle = useCallback((campaignId: string, currentStatus: string) => {
+    const form = new FormData();
+    form.append("_action", "toggle");
+    form.append("campaignId", campaignId);
+    form.append("currentStatus", currentStatus);
+    submit(form, { method: "post" });
+  }, [submit]);
+
+  const handleDelete = useCallback((campaignId: string) => {
+    if (confirm("Are you sure you want to delete this campaign? This action cannot be undone.")) {
+      const form = new FormData();
+      form.append("_action", "delete");
+      form.append("campaignId", campaignId);
+      submit(form, { method: "post" });
+    }
+  }, [submit]);
+
+  const handleDuplicate = useCallback((campaign: any) => {
+    const form = new FormData();
+    form.append("_action", "create");
+    form.append("campaignType", campaign.type);
+    form.append("title", `${campaign.title} (Copy)`);
+    form.append("enabled", "false"); // Duplicates start paused
+    
+    // Copy campaign-specific fields
+    const config = campaign.config;
+    if (campaign.type === "free_gift") {
+      form.append("threshold", (config.thresholdCents / 100).toString());
+      form.append("giftVariantId", config.giftVariantId);
+    } else if (campaign.type === "bxgy") {
+      form.append("buyMinQty", config.buyMinQty.toString());
+      form.append("getVariantIds", config.getVariantIds.join(","));
+      form.append("discountType", config.discountType);
+      if (config.percentOff) {
+        form.append("percentOff", config.percentOff.toString());
+      }
+    } else if (campaign.type === "volume_discount") {
+      form.append("targetProducts", config.targetProducts.join(","));
+      form.append("tierCount", config.tiers.length.toString());
+      config.tiers.forEach((tier: any, index: number) => {
+        form.append(`tier_${index}_quantity`, tier.quantity.toString());
+        form.append(`tier_${index}_discount`, tier.discountPercentage.toString());
+      });
+    }
+    
+    submit(form, { method: "post" });
+  }, [submit]);
+
+  // Auto-dismiss success banners
+  const [, startTransition] = useState(false);
+  if (actionData?.success && showBanner) {
+    setTimeout(() => setShowBanner(false), 5000);
+  }
+
+  // Filter campaigns by status
+  const filteredCampaigns = campaigns.filter((campaign) => {
+    if (filterStatus === "all") return true;
+    return campaign.status === filterStatus;
+  });
+
+  const getCampaignSummary = (campaign: any) => {
+    const config = campaign.config;
+    if (campaign.type === "free_gift") {
+      return `Free gift over $${(config.thresholdCents / 100).toFixed(2)}`;
+    } else if (campaign.type === "bxgy") {
+      return `Buy ${config.buyMinQty}, get ${config.discountType === "FREE" ? "free" : `${config.percentOff}% off`}`;
+    } else if (campaign.type === "volume_discount") {
+      return `${config.tiers.length} tier${config.tiers.length > 1 ? "s" : ""}`;
+    }
+    return "";
+  };
+
+  const campaignRows = filteredCampaigns.map((campaign) => [
+    <BlockStack key="title" gap="100">
+      <Text as="span" variant="bodyMd" fontWeight="semibold">
+        {campaign.title}
+      </Text>
+      <Text as="span" variant="bodySm" tone="subdued">
+        {getCampaignSummary(campaign)}
+      </Text>
+    </BlockStack>,
     <Badge key="type" {...getCampaignTypeBadge(campaign.type)} />,
     <Badge key="status" {...getStatusBadge(campaign.status)} />,
     new Date(campaign.createdAt).toLocaleDateString(),
     <ButtonGroup key="actions">
-      <Button size="slim" variant="plain">
-        Edit
+      {campaign.status !== "archived" && (
+        <Button 
+          size="slim" 
+          variant="plain"
+          onClick={() => handleToggle(campaign.id, campaign.status)}
+          loading={navigation.state === "submitting"}
+        >
+          {campaign.status === "active" ? "Pause" : "Activate"}
+        </Button>
+      )}
+      <Button 
+        size="slim" 
+        variant="plain"
+        onClick={() => handleDuplicate(campaign)}
+      >
+        Duplicate
       </Button>
-      <Button size="slim" variant="plain" tone="critical">
+      <Button 
+        size="slim" 
+        variant="plain" 
+        tone="critical"
+        onClick={() => handleDelete(campaign.id)}
+      >
         Delete
       </Button>
     </ButtonGroup>,
@@ -245,13 +403,13 @@ export default function CampaignsIndex() {
     <Page>
       <TitleBar title="Campaigns" />
 
-      {actionData?.message && (
+      {actionData?.message && showBanner && (
         <Layout>
           <Layout.Section>
             <Banner
               title={actionData.success ? "Success" : "Error"}
               tone={actionData.success ? "success" : "critical"}
-              onDismiss={() => {}}
+              onDismiss={() => setShowBanner(false)}
             >
               <p>{actionData.message}</p>
             </Banner>
@@ -265,7 +423,7 @@ export default function CampaignsIndex() {
             <BlockStack gap="400">
               <InlineStack align="space-between">
                 <Text as="h2" variant="headingMd">
-                  Campaigns ({campaigns.length})
+                  Campaigns ({filteredCampaigns.length})
                 </Text>
                 <ButtonGroup>
                   <Button url="/app/campaigns/new" variant="primary">
@@ -274,7 +432,39 @@ export default function CampaignsIndex() {
                 </ButtonGroup>
               </InlineStack>
 
-              {campaigns.length === 0 ? (
+              {/* Filter Tabs */}
+              <InlineStack gap="200">
+                <Button
+                  variant={filterStatus === "all" ? "primary" : "secondary"}
+                  size="slim"
+                  onClick={() => setFilterStatus("all")}
+                >
+                  All ({campaigns.length})
+                </Button>
+                <Button
+                  variant={filterStatus === "active" ? "primary" : "secondary"}
+                  size="slim"
+                  onClick={() => setFilterStatus("active")}
+                >
+                  Active ({campaigns.filter(c => c.status === "active").length})
+                </Button>
+                <Button
+                  variant={filterStatus === "paused" ? "primary" : "secondary"}
+                  size="slim"
+                  onClick={() => setFilterStatus("paused")}
+                >
+                  Paused ({campaigns.filter(c => c.status === "paused").length})
+                </Button>
+                <Button
+                  variant={filterStatus === "archived" ? "primary" : "secondary"}
+                  size="slim"
+                  onClick={() => setFilterStatus("archived")}
+                >
+                  Archived ({campaigns.filter(c => c.status === "archived").length})
+                </Button>
+              </InlineStack>
+
+              {filteredCampaigns.length === 0 ? (
                 <EmptyState
                   heading="No campaigns yet"
                   action={{

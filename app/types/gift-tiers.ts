@@ -34,6 +34,7 @@ export interface CampaignConfig {
   config: FreeGiftConfig | BXGYConfig | VolumeDiscountConfig;
   createdAt: Date;
   updatedAt: Date;
+  endDate?: Date | null;
 }
 
 export interface GiftTiersConfig {

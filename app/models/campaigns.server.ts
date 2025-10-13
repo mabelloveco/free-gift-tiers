@@ -37,6 +37,7 @@ export async function createCampaign(
     config: JSON.parse(campaign.config),
     createdAt: campaign.createdAt,
     updatedAt: campaign.updatedAt,
+    endDate: campaign.endDate,
   };
 }
 
@@ -54,6 +55,7 @@ export async function getCampaigns(shop: string): Promise<CampaignConfig[]> {
     config: JSON.parse(campaign.config),
     createdAt: campaign.createdAt,
     updatedAt: campaign.updatedAt,
+    endDate: campaign.endDate,
   }));
 }
 
@@ -72,6 +74,7 @@ export async function getCampaign(shop: string, id: string): Promise<CampaignCon
     config: JSON.parse(campaign.config),
     createdAt: campaign.createdAt,
     updatedAt: campaign.updatedAt,
+    endDate: campaign.endDate,
   };
 }
 
@@ -98,6 +101,7 @@ export async function updateCampaign(
     config: JSON.parse(campaign.config),
     createdAt: campaign.createdAt,
     updatedAt: campaign.updatedAt,
+    endDate: campaign.endDate,
   };
 }
 
@@ -128,6 +132,7 @@ export async function getActiveCampaigns(shop: string): Promise<CampaignConfig[]
     config: JSON.parse(campaign.config),
     createdAt: campaign.createdAt,
     updatedAt: campaign.updatedAt,
+    endDate: campaign.endDate,
   }));
 }
 

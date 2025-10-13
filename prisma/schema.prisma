@@ -40,6 +40,7 @@ model Campaign {
   config          String   // JSON configuration
   functionId      String?
   discountId      String?
+  endDate         DateTime? // Optional end date for campaign
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   

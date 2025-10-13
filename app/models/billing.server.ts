@@ -3,7 +3,10 @@ import { prisma } from "../db.server";
 export interface BillingPlan {
   id: string;
   name: string;
-  price: number;
+  price: {
+    monthly: number;
+    yearly: number;
+  };
   features: string[];
   limits: {
     campaigns: number;
@@ -15,7 +18,10 @@ export const BILLING_PLANS: Record<string, BillingPlan> = {
   free: {
     id: "free",
     name: "Free",
-    price: 0,
+    price: {
+      monthly: 0,
+      yearly: 0,
+    },
     features: [
       "1 active campaign",
       "Basic analytics",
@@ -30,7 +36,10 @@ export const BILLING_PLANS: Record<string, BillingPlan> = {
   basic: {
     id: "basic",
     name: "Basic",
-    price: 19.99,
+    price: {
+      monthly: 19,
+      yearly: 171,
+    },
     features: [
       "5 active campaigns",
       "BXGY campaigns",
@@ -46,7 +55,10 @@ export const BILLING_PLANS: Record<string, BillingPlan> = {
   pro: {
     id: "pro",
     name: "Pro",
-    price: 39.99,
+    price: {
+      monthly: 39,
+      yearly: 351,
+    },
     features: [
       "15 active campaigns",
       "All campaign types",
@@ -62,7 +74,10 @@ export const BILLING_PLANS: Record<string, BillingPlan> = {
   plus: {
     id: "plus",
     name: "Plus",
-    price: 49.99,
+    price: {
+      monthly: 49,
+      yearly: 441,
+    },
     features: [
       "Unlimited campaigns",
       "Unlimited events",
@@ -191,6 +206,12 @@ export async function checkPlanLimits(
 }
 
 export async function canCreateCampaign(shop: string): Promise<boolean> {
+  // Users can create unlimited campaigns
+  return true;
+}
+
+export async function canActivateCampaign(shop: string): Promise<boolean> {
+  // Check if they can activate another campaign based on their plan
   const limits = await checkPlanLimits(shop, "campaigns");
   return limits.allowed;
 }

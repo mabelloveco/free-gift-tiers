@@ -1,6 +1,7 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { useLoaderData, useSubmit, useActionData } from "@remix-run/react";
+import { useState } from "react";
 import {
   Page,
   Layout,
@@ -14,6 +15,7 @@ import {
   InlineStack,
   Banner,
   Divider,
+  ButtonGroup,
 } from "@shopify/polaris";
 import { TitleBar } from "@shopify/app-bridge-react";
 import { authenticate } from "../shopify.server";
@@ -36,9 +38,22 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const plans = getAllPlans();
   const usageStats = await getUsageStats(session.shop);
 
+  // Serialize plans data to ensure proper client-side hydration
+  const serializedPlans = plans.map(plan => ({
+    ...plan,
+    price: {
+      monthly: plan.price.monthly,
+      yearly: plan.price.yearly
+    },
+    limits: {
+      campaigns: plan.limits.campaigns === Infinity ? -1 : plan.limits.campaigns,
+      events: plan.limits.events === Infinity ? -1 : plan.limits.events,
+    }
+  }));
+
   return json({ 
-    billingPlan: billingPlan || { plan: "free", status: "active" },
-    plans,
+    billingPlan: billingPlan || { plan: "free", status: "active", interval: "monthly" },
+    plans: serializedPlans,
     usageStats
   });
 };
@@ -47,6 +62,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const { session, billing } = await authenticate.admin(request);
   const formData = await request.formData();
   const selectedPlan = String(formData.get("plan"));
+  const interval = String(formData.get("interval") || "monthly");
 
   try {
     if (selectedPlan === "free") {
@@ -60,12 +76,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json({ error: "Invalid plan selected" }, { status: 400 });
     }
 
+    const amount = interval === "yearly" ? planDetails.price.yearly : planDetails.price.monthly;
+    const billingInterval = interval === "yearly" ? billing.Interval.Annual : billing.Interval.Every30Days;
+
     // Create Shopify AppSubscription
     const billingResponse = await billing.request({
       plan: selectedPlan,
-      amount: planDetails.price,
+      amount,
       currencyCode: "USD",
-      interval: billing.Interval.Every30Days,
+      interval: billingInterval,
     });
 
     if (billingResponse?.confirmationUrl) {
@@ -87,11 +106,19 @@ export default function Billing() {
   const { billingPlan, plans, usageStats } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const submit = useSubmit();
+  const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
   
   const handleSelectPlan = (plan: string) => {
     const formData = new FormData();
     formData.append("plan", plan);
+    formData.append("interval", billingInterval);
     submit(formData, { method: "post" });
+  };
+
+  const calculateSavings = (monthlyPrice: number, yearlyPrice: number) => {
+    const yearlyMonthly = monthlyPrice * 12;
+    const savings = Math.round(((yearlyMonthly - yearlyPrice) / yearlyMonthly) * 100);
+    return savings;
   };
 
   return (
@@ -122,7 +149,7 @@ export default function Billing() {
                   </BlockStack>
                   {billingPlan.plan !== "free" && (
                     <Text as="p" variant="headingLg">
-                      ${plans.find(p => p.id === billingPlan.plan)?.price || 0}
+                      ${plans.find(p => p.id === billingPlan.plan)?.price.monthly || 0}
                       /month
                     </Text>
                   )}
@@ -136,13 +163,13 @@ export default function Billing() {
                     <BlockStack gap="200">
                       <Text as="p" variant="bodyMd" tone="subdued">Active Campaigns</Text>
                       <Text as="p" variant="headingLg">
-                        {usageStats.campaigns.current} / {usageStats.campaigns.limit === Infinity ? '∞' : usageStats.campaigns.limit}
+                        {usageStats.campaigns.current} / {usageStats.campaigns.limit === -1 ? '∞' : usageStats.campaigns.limit}
                       </Text>
                     </BlockStack>
                     <BlockStack gap="200">
                       <Text as="p" variant="bodyMd" tone="subdued">Events (30 days)</Text>
                       <Text as="p" variant="headingLg">
-                        {usageStats.events.current} / {usageStats.events.limit === Infinity ? '∞' : usageStats.events.limit}
+                        {usageStats.events.current} / {usageStats.events.limit === -1 ? '∞' : usageStats.events.limit}
                       </Text>
                     </BlockStack>
                   </InlineGrid>
@@ -150,51 +177,96 @@ export default function Billing() {
               </BlockStack>
             </Card>
 
-            <Text as="h2" variant="headingLg">
-              Choose Your Plan
-            </Text>
+            <BlockStack gap="400">
+              <InlineStack align="space-between" blockAlign="center">
+                <Text as="h2" variant="headingLg">
+                  Choose Your Plan
+                </Text>
+                
+                <ButtonGroup variant="segmented">
+                  <Button
+                    pressed={billingInterval === "monthly"}
+                    onClick={() => setBillingInterval("monthly")}
+                  >
+                    Monthly
+                  </Button>
+                  <Button
+                    pressed={billingInterval === "yearly"}
+                    onClick={() => setBillingInterval("yearly")}
+                  >
+                    Yearly
+                    {billingInterval === "yearly" && (
+                      <Badge tone="success">Save 25%</Badge>
+                    )}
+                  </Button>
+                </ButtonGroup>
+              </InlineStack>
+            </BlockStack>
 
             <InlineGrid columns={{ xs: 1, sm: 2, md: 4 }} gap="400">
-              {plans.map((plan) => (
-                <Card key={plan.id}>
-                  <BlockStack gap="400">
-                    <BlockStack gap="200">
-                      <Text as="h3" variant="headingMd">
-                        {plan.name}
-                      </Text>
-                      <Text as="p" variant="heading2xl">
-                        ${plan.price}
-                        <Text as="span" variant="bodyMd" tone="subdued">
-                          {plan.price > 0 ? "/month" : ""}
-                        </Text>
-                      </Text>
+              {plans.map((plan) => {
+                const displayPrice = billingInterval === "yearly" 
+                  ? plan.price.yearly 
+                  : plan.price.monthly;
+                const priceLabel = billingInterval === "yearly" ? "/year" : "/month";
+                const savings = billingInterval === "yearly" 
+                  ? calculateSavings(plan.price.monthly, plan.price.yearly)
+                  : 0;
+
+                return (
+                  <Card key={plan.id}>
+                    <BlockStack gap="400">
+                      <BlockStack gap="200">
+                        <InlineStack align="space-between" blockAlign="start">
+                          <Text as="h3" variant="headingMd">
+                            {plan.name}
+                          </Text>
+                          {savings > 0 && (
+                            <Badge tone="success">{savings}% off</Badge>
+                          )}
+                        </InlineStack>
+                        
+                        <BlockStack gap="100">
+                          <Text as="p" variant="heading2xl">
+                            ${displayPrice}
+                            <Text as="span" variant="bodyMd" tone="subdued">
+                              {displayPrice > 0 ? priceLabel : ""}
+                            </Text>
+                          </Text>
+                          {billingInterval === "yearly" && plan.price.monthly > 0 && (
+                            <Text as="p" variant="bodySm" tone="subdued">
+                              ${plan.price.monthly}/month billed annually
+                            </Text>
+                          )}
+                        </BlockStack>
+                      </BlockStack>
+
+                      <Divider />
+
+                      <BlockStack gap="200">
+                        <List>
+                          {plan.features.map((feature, i) => (
+                            <List.Item key={i}>{feature}</List.Item>
+                          ))}
+                        </List>
+                      </BlockStack>
+
+                      <Button
+                        variant={
+                          billingPlan.plan === plan.id ? "primary" : "secondary"
+                        }
+                        fullWidth
+                        disabled={billingPlan.plan === plan.id}
+                        onClick={() => handleSelectPlan(plan.id)}
+                      >
+                        {billingPlan.plan === plan.id
+                          ? "Current Plan"
+                          : "Select Plan"}
+                      </Button>
                     </BlockStack>
-
-                    <Divider />
-
-                    <BlockStack gap="200">
-                      <List>
-                        {plan.features.map((feature, i) => (
-                          <List.Item key={i}>{feature}</List.Item>
-                        ))}
-                      </List>
-                    </BlockStack>
-
-                    <Button
-                      variant={
-                        billingPlan.plan === plan.id ? "primary" : "secondary"
-                      }
-                      fullWidth
-                      disabled={billingPlan.plan === plan.id}
-                      onClick={() => handleSelectPlan(plan.id)}
-                    >
-                      {billingPlan.plan === plan.id
-                        ? "Current Plan"
-                        : "Select Plan"}
-                    </Button>
-                  </BlockStack>
-                </Card>
-              ))}
+                  </Card>
+                );
+              })}
             </InlineGrid>
           </BlockStack>
         </Layout.Section>

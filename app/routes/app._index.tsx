@@ -138,12 +138,12 @@ export default function Index() {
                     </Badge>
                     {planDetails && (
                       <Text as="span" variant="bodyMd" tone="subdued">
-                        ${planDetails.price}/month
+                        ${planDetails.price.monthly}/month
                       </Text>
                     )}
                   </InlineStack>
                   <Text as="p" variant="bodyMd" tone="subdued">
-                    {usageStats.campaigns.current} / {usageStats.campaigns.limit === Infinity ? '∞' : usageStats.campaigns.limit} campaigns
+                    {usageStats.campaigns.current} / {usageStats.campaigns.limit === Infinity || usageStats.campaigns.limit === -1 ? '∞' : usageStats.campaigns.limit} campaigns
                   </Text>
                   <Button url="/app/billing" variant="plain" size="slim">
                     {billingPlan.plan === "free" ? "Upgrade" : "Manage"}

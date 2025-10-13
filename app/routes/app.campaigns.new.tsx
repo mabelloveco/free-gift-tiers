@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { useActionData, useNavigation, useSubmit } from "@remix-run/react";
+import { useActionData, useLoaderData, useNavigation, useSubmit } from "@remix-run/react";
 import { useState, useCallback } from "react";
 import {
   Page,
@@ -34,10 +34,19 @@ import type {
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(request);
   
-  // Check if user can create more campaigns
-  const canCreate = await canCreateCampaign(session.shop);
+  // Users can always create campaigns
+  const canCreate = true;
   
-  return json({ canCreate });
+  // Check if they can activate a campaign
+  const { canActivateCampaign } = await import("../models/billing.server");
+  const canActivate = await canActivateCampaign(session.shop);
+  
+  // Get current active campaigns count
+  const activeCampaignsCount = await prisma.campaign.count({
+    where: { shop: session.shop, status: "active" },
+  });
+  
+  return json({ canCreate, canActivate, activeCampaignsCount });
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -50,20 +59,37 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       const campaignType = formData.get("campaignType") as CampaignType;
       const title = formData.get("title") as string;
       const enabled = formData.get("enabled") === "true";
+      const endDateStr = formData.get("endDate") as string | null;
 
-      // Check billing limits
-      const canCreate = await canCreateCampaign(session.shop);
-      if (!canCreate) {
-        return json({
-          success: false,
-          message: "You've reached your campaign limit. Please upgrade your plan.",
-        });
+      // Check if they can activate this campaign
+      if (enabled) {
+        const { canActivateCampaign } = await import("../models/billing.server");
+        const canActivate = await canActivateCampaign(session.shop);
+        
+        if (!canActivate) {
+          return json({
+            success: false,
+            message: "You've reached your active campaign limit. Please pause another campaign or upgrade your plan.",
+          });
+        }
       }
 
       // Validate common fields
       const errors: Record<string, string> = {};
       if (!title.trim()) {
         errors.title = "Campaign title is required";
+      }
+
+      // Validate end date if provided
+      let endDate: Date | null = null;
+      if (endDateStr) {
+        endDate = new Date(endDateStr);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (endDate < today) {
+          errors.endDate = "End date must be today or in the future";
+        }
       }
 
       if (Object.keys(errors).length > 0) {
@@ -166,6 +192,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           title: title.trim(),
           status: enabled ? "active" : "paused",
           config: JSON.stringify(config),
+          ...(endDate && { endDate }),
         },
       });
 
@@ -187,20 +214,28 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export default function NewCampaign() {
-  const { canCreate } = useLoaderData<typeof loader>();
+  const { canCreate, canActivate, activeCampaignsCount } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const submit = useSubmit();
 
   const [campaignType, setCampaignType] = useState<CampaignType>("free_gift");
-  const [formData, setFormData] = useState<FreeGiftFormData | BXGYFormData | VolumeDiscountFormData>({
-    enabled: true,
+  const [formData, setFormData] = useState<any>({
+    enabled: canActivate, // Default to enabled only if they can activate
     threshold: "",
     giftVariantId: "",
     title: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [tierCount, setTierCount] = useState(1);
+  const [showBanner, setShowBanner] = useState(true);
+  const [hasEndDate, setHasEndDate] = useState(false);
+  const [endDate, setEndDate] = useState("");
+
+  // Auto-dismiss success banners after 5 seconds
+  if (actionData?.success && showBanner) {
+    setTimeout(() => setShowBanner(false), 5000);
+  }
 
   const campaignTypeOptions = [
     { label: "Free Gift with Purchase", value: "free_gift" },
@@ -231,8 +266,8 @@ export default function NewCampaign() {
   );
 
   const handleTierChange = useCallback((index: number, field: string, value: string) => {
-    setFormData((prev) => {
-      if (prev.type === "volume_discount") {
+    setFormData((prev: any) => {
+      if (prev.tiers && Array.isArray(prev.tiers)) {
         const newTiers = [...prev.tiers];
         newTiers[index] = { ...newTiers[index], [field]: value };
         return { ...prev, tiers: newTiers };
@@ -243,8 +278,8 @@ export default function NewCampaign() {
 
   const addTier = useCallback(() => {
     setTierCount(prev => prev + 1);
-    setFormData((prev) => {
-      if (prev.type === "volume_discount") {
+    setFormData((prev: any) => {
+      if (prev.tiers && Array.isArray(prev.tiers)) {
         return {
           ...prev,
           tiers: [...prev.tiers, { quantity: "", discountPercentage: "" }],
@@ -257,9 +292,9 @@ export default function NewCampaign() {
   const removeTier = useCallback((index: number) => {
     if (tierCount > 1) {
       setTierCount(prev => prev - 1);
-      setFormData((prev) => {
-        if (prev.type === "volume_discount") {
-          const newTiers = prev.tiers.filter((_, i) => i !== index);
+      setFormData((prev: any) => {
+        if (prev.tiers && Array.isArray(prev.tiers)) {
+          const newTiers = prev.tiers.filter((_: any, i: number) => i !== index);
           return { ...prev, tiers: newTiers };
         }
         return prev;
@@ -273,6 +308,11 @@ export default function NewCampaign() {
     form.append("campaignType", campaignType);
     form.append("title", formData.title);
     form.append("enabled", formData.enabled.toString());
+    
+    // Add end date if enabled
+    if (hasEndDate && endDate) {
+      form.append("endDate", endDate);
+    }
 
     // Add campaign-specific fields
     if (campaignType === "free_gift") {
@@ -295,39 +335,42 @@ export default function NewCampaign() {
     }
 
     submit(form, { method: "post" });
-  }, [campaignType, formData, submit]);
+  }, [campaignType, formData, submit, hasEndDate, endDate]);
 
   const isLoading = navigation.state === "submitting";
   const displayErrors = actionData?.errors || errors;
-
-  if (!canCreate) {
-    return (
-      <Page>
-        <TitleBar title="Create New Campaign" />
-        <Layout>
-          <Layout.Section>
-            <Banner tone="warning">
-              <p>You've reached your campaign limit. Please upgrade your plan to create more campaigns.</p>
-            </Banner>
-          </Layout.Section>
-        </Layout>
-      </Page>
-    );
-  }
 
   return (
     <Page>
       <TitleBar title="Create New Campaign" />
       
-      {actionData?.message && (
+      {!canActivate && formData.enabled && (
+        <Layout>
+          <Layout.Section>
+            <Banner tone="warning">
+              <p>
+                You have {activeCampaignsCount} active campaign(s). To activate this campaign, 
+                please pause another campaign first or save this one as paused.
+              </p>
+            </Banner>
+          </Layout.Section>
+        </Layout>
+      )}
+
+      {actionData?.message && showBanner && (
         <Layout>
           <Layout.Section>
             <Banner
               title={actionData.success ? "Success" : "Error"}
               tone={actionData.success ? "success" : "critical"}
-              onDismiss={() => {}}
+              onDismiss={() => setShowBanner(false)}
             >
               <p>{actionData.message}</p>
+              {actionData.success && actionData.campaignId && (
+                <Button url="/app/campaigns" variant="plain">
+                  View all campaigns
+                </Button>
+              )}
             </Banner>
           </Layout.Section>
         </Layout>
@@ -353,7 +396,37 @@ export default function NewCampaign() {
                   label="Enable Campaign"
                   checked={formData.enabled}
                   onChange={(checked) => handleFieldChange("enabled", checked)}
+                  helpText={
+                    !canActivate && formData.enabled
+                      ? "⚠️ You've reached your active campaign limit. This campaign will be saved as paused."
+                      : formData.enabled
+                      ? "Campaign will be active immediately after creation."
+                      : "Campaign will be saved as paused. You can activate it later."
+                  }
                 />
+
+                <Checkbox
+                  label="Set end date"
+                  checked={hasEndDate}
+                  onChange={setHasEndDate}
+                  helpText={
+                    hasEndDate
+                      ? "Campaign will pause automatically on the selected date."
+                      : "Campaign runs indefinitely until manually paused."
+                  }
+                />
+
+                {hasEndDate && (
+                  <TextField
+                    label="End Date"
+                    type="date"
+                    value={endDate}
+                    onChange={setEndDate}
+                    error={displayErrors.endDate}
+                    helpText="Campaign will automatically pause at midnight on this date"
+                    autoComplete="off"
+                  />
+                )}
 
                 <TextField
                   label="Campaign Title"
