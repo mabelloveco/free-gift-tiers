@@ -40,21 +40,27 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   // Serialize plans data to ensure proper client-side hydration
   const serializedPlans = plans.map(plan => ({
-    ...plan,
+    id: plan.id,
+    name: plan.name,
     price: {
       monthly: plan.price.monthly,
       yearly: plan.price.yearly
     },
+    features: plan.features,
     limits: {
       campaigns: plan.limits.campaigns === Infinity ? -1 : plan.limits.campaigns,
       events: plan.limits.events === Infinity ? -1 : plan.limits.events,
     }
   }));
 
+  // Get current plan details for display
+  const currentPlanDetails = billingPlan ? getPlanDetails(billingPlan.plan) : null;
+
   return json({ 
     billingPlan: billingPlan || { plan: "free", status: "active", interval: "monthly" },
     plans: serializedPlans,
-    usageStats
+    usageStats,
+    currentPlanDetails
   });
 };
 
@@ -103,7 +109,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export default function Billing() {
-  const { billingPlan, plans, usageStats } = useLoaderData<typeof loader>();
+  const { billingPlan, plans, usageStats, currentPlanDetails } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const submit = useSubmit();
   const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
@@ -147,9 +153,9 @@ export default function Billing() {
                       <Badge>{billingPlan.status}</Badge>
                     </InlineStack>
                   </BlockStack>
-                  {billingPlan.plan !== "free" && (
+                  {billingPlan.plan !== "free" && currentPlanDetails && (
                     <Text as="p" variant="headingLg">
-                      ${plans.find(p => p.id === billingPlan.plan)?.price.monthly || 0}
+                      ${currentPlanDetails.price.monthly}
                       /month
                     </Text>
                   )}

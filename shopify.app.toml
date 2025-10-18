@@ -2,30 +2,39 @@
 
 client_id = "b5ddcd3bd79f97ee9540d293a0031115"
 name = "FreeGiftTiers"
-application_url = "https://legislature-eastern-salary-skiing.trycloudflare.com"
+application_url = "https://your-production-domain.com"
 embedded = true
 
 [build]
 automatically_update_urls_on_dev = true
 
 [webhooks]
-api_version = "2026-01"
-
-  [[webhooks.subscriptions]]
-  topics = [ "app/scopes_update" ]
-  uri = "/webhooks/app/scopes_update"
+api_version = "2024-10"
 
   [[webhooks.subscriptions]]
   topics = [ "app/uninstalled" ]
   uri = "/webhooks/app/uninstalled"
 
   [[webhooks.subscriptions]]
-  topics = [ "app_subscriptions/update" ]
-  uri = "/webhooks/billing"
+  topics = [ "app/scopes_update" ]
+  uri = "/webhooks/app/scopes_update"
+
+# GDPR webhooks - uncomment for production
+  # [[webhooks.subscriptions]]
+  # topics = [ "customers/data_request" ]
+  # uri = "/webhooks/customers/data_request"
+
+  # [[webhooks.subscriptions]]
+  # topics = [ "customers/redact" ]
+  # uri = "/webhooks/customers/redact"
+
+  # [[webhooks.subscriptions]]
+  # topics = [ "shop/redact" ]
+  # uri = "/webhooks/shop/redact"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "write_products,write_discounts,read_discounts,read_orders,write_cart_transforms,read_customer_events,write_customers,read_themes,read_metaobjects,write_metaobjects"
+scopes = "read_customer_events,read_discounts,read_metaobjects,read_orders,read_themes,write_cart_transforms,write_customers,write_discounts,write_metaobjects,write_products"
 
 [auth]
-redirect_urls = [ "https://legislature-eastern-salary-skiing.trycloudflare.com/api/auth" ]
+redirect_urls = [ "https://your-production-domain.com/api/auth" ]

@@ -34,7 +34,7 @@ model Session {
 model Campaign {
   id              String   @id @default(cuid())
   shop            String
-  type            String   // "free_gift", "bxgy", "volume"
+  type            String   // "free_gift", "bxgy", "volume_discount"
   title           String
   status          String   @default("active") // "active", "paused", "archived"
   config          String   // JSON configuration

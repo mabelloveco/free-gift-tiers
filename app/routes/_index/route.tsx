@@ -14,9 +14,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 
   return { showForm: Boolean(login) };
-};
-
-export default function App() {
+};export default function App() {
   const { showForm } = useLoaderData<typeof loader>();
 
   return (
@@ -56,3 +54,5 @@ export default function App() {
     </div>
   );
 }
+
+

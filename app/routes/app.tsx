@@ -30,6 +30,8 @@ export default function App() {
         <Link to="/app/billing">Billing</Link>
         <Link to="/app/docs">Theme Integration</Link>
         <a href="/support" target="_blank" rel="noopener noreferrer">Support</a>
+        <a href="/legal/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+        <a href="/legal/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>
       </NavMenu>
       <Outlet />
     </AppProvider>
